@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h1>捐赠项目列表</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>项目名称</th>
+            <th>项目状态</th>
+            <th>发起时间</th>
+            <th>截止时间</th>
+            <th>目的金额</th>
+            <th>当前筹集金额</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for project in donation_projects %}
+            <tr>
+                <td><a href="{% url 'donation:project_detail' project.id %}">{{ project.project_name }}</a></td>
+                <td>{{ project.get_project_status_display }}</td>
+                <td>{{ project.start_time }}</td>
+                <td>{{ project.deadline }}</td>
+                <td>{{ project.donation_amount }}</td>
+                <td>{{ project.get_donation_amount }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5">暂无数据</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

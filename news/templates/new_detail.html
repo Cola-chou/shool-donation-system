@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <h1>新闻标题</h1>
+    <h2>{{ new.title }}</h2>
+    <img src="{{ new.image.url }}" alt="">
+    <p>{{ new.body }}</p>
+    {% if projects %}
+        {% for project in projects %}
+            <table>
+                <tr>
+                    <td><a href="{% url 'donation:project_detail' project.id %}">{{ project.project_name }}</a></td>
+                    <td>{{ project.get_project_status_display }}</td>
+                    <td>{{ project.start_time }}</td>
+                    <td>{{ project.deadline }}</td>
+                    <td>{{ project.donation_amount }}元</td>
+                    <td>{{ project.get_donation_amount }}元</td>
+                </tr>
+            </table>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block content %}
+    <h1>{{ object.project_name }}</h1>
+    <p>{{ object.project_desc }}</p>
+    <p>目标捐赠金额：{{ object.donation_amount }}</p>
+    <p>当前筹集金额：{{ object.get_donation_amount }}</p>
+    <p>状态：{{ object.get_project_status_display }}</p>
+    <p>发起时间：{{ object.start_time }}</p>
+    <p>截止时间：{{ object.deadline }}</p>
+    <h1>请求物资</h1>
+    {% if request_items %}
+        {% for item in request_items %}
+            <p>{{ item.name }}</p>
+            <img src="{{ item.item_iamge.url }}" alt="">
+            <a href="{% url "item:donation_item_create" item.donation_project.id item.id %}">点击捐赠</a>
+        {% endfor %}
+    {% endif %}
+{% endblock %}

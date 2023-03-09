@@ -1,0 +1,25 @@
+<!-- donation_form.html -->
+{% extends 'base.html' %}
+
+{% block title %}
+    <title>捐赠物资表单</title>
+{% endblock %}
+
+{% block content %}
+    <h1>捐赠物资表单</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        {% if form.errors %}
+            <p>请检查以下错误:</p>
+            <ul>
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+            </ul>
+        {% endif %}
+        <input type="submit" value="提交">
+    </form>
+{% endblock %}

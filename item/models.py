@@ -1,16 +1,14 @@
 import os
 import shutil
-from django.db.models import F, OuterRef, Subquery
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Sum
-from django.db.models.signals import pre_delete, post_delete
+from django.db.models.signals import pre_delete, post_delete, post_save, pre_save
 from django.dispatch import receiver
 
 from ..donation.models import DonationRecord, DonationProject
-from stdimage.models import StdImageField
-from django.utils.html import format_html
+
 
 
 class Category(models.Model):
@@ -65,31 +63,23 @@ class RequestItem(models.Model):
                                    blank=True,
                                    null=True)
 
-    # # 这里要使用format_html
-    # # 才可以在后台显示图片
-    # def image_img(self):
-    #     return format_html(
-    #         '<img src="{}" width="100px"/>',
-    #         self.item_image.thumbnail.url,
-    #     )
-    #
-    # image_img.short_description = '图片'
-    # # 图片是否显示
-    # image_img.allow_tags = True
+    # def save(self, *args, **kwargs):
+    #     print('save')
+    #     from django.db.models import Sum
+    #     # 保存捐赠物品时，自动更新物品价值
+    #     self.all_price = self.price * self.quantity
+    #     # 更新捐赠项目中的目的捐赠价值donation_amount
+    #     self.donation_project.donation_amount = self.donation_project \
+    #                                                 .request_items \
+    #                                                 .aggregate(Sum('all_price'))['all_price__sum'] or 0
+    #     # 此处先保存至内存中的RequestItem对象的donation_project属性中
+    #     # 最后在save_related方法中对内存中的RequestItem对象保存至数据库
+    #     self.donation_project.save()
+    #     super().save(*args, **kwargs)
 
-    def save(self, *args, **kwargs):
-        print('save')
-        from django.db.models import Sum
-        # 保存捐赠物品时，自动更新物品价值
-        self.all_price = self.price * self.quantity
-        # 更新捐赠项目中的目的捐赠价值donation_amount
-        self.donation_project.donation_amount = self.donation_project \
-                                                    .request_items \
-                                                    .aggregate(Sum('all_price'))['all_price__sum'] or 0
-        # 此处先保存至内存中的RequestItem对象的donation_project属性中
-        # 最后在save_related方法中对内存中的RequestItem对象保存至数据库
-        self.donation_project.save()
-        super().save(*args, **kwargs)
+    def delete(self, using=None, keep_parents=False):
+        print('Request.delete()')
+        return super(RequestItem, self).delete(using=None, keep_parents=False)
 
     class Meta:
         verbose_name = '请求物资'
@@ -98,16 +88,29 @@ class RequestItem(models.Model):
     def __str__(self):
         return self.name
 
-    def delete(self, using=None, keep_parents=False):
-        print('Request.delete()')
-        return super(RequestItem, self).delete(using=None, keep_parents=False)
+
+@receiver(pre_save, sender=RequestItem)
+def request_item_pre_save(sender, instance, **kwargs):
+    print('RequestItem.request_item_pre_save')
+    instance.all_price = instance.quantity * instance.price
+    print(instance.all_price)
+
+
+@receiver(post_save, sender=RequestItem)
+def request_item_save(sender, instance, **kwargs):
+    print('RequestItem.request_item_save')
+    project_id = instance.donation_project.id
+    project = DonationProject.objects.get(id=project_id)
+    project.donation_amount = project.request_items \
+                                  .aggregate(Sum('all_price'))['all_price__sum'] or 0
+    project.save()
 
 
 @receiver(post_delete, sender=RequestItem)
 # post_delete 删除requestitem对象之后发出信号
 # pre_delete 删除requestitem对象之前发出信号
-def item_delete(sender, instance, **kwargs):
-    print('RequestItem.item_delete')
+def request_item_delete(sender, instance, **kwargs):
+    print('RequestItem.request_item_delete')
     # 1.删除物品对应照片文件
     # 获取要删除的物品照片路径
     if instance.item_image:
@@ -192,38 +195,68 @@ class DonationItem(models.Model):
     objects = models.Manager()
     published = PublishedItemsManager()
 
-    def save(self, *args, **kwargs):
-        print('donationItem。save（）')
-        # 保存捐赠物品时，自动更新物品价值
-        self.all_price = self.price * self.quantity
-        super().save(*args, **kwargs)
-        # 获取与该物品相关的捐赠记录对象
-        record = self.donation_record
-        # 获取与该记录相关的受捐项目对象
-        project = record.donation_project
-        # 获取该捐赠项目下所有物品
-        items = \
-            DonationItem.published.filter(donation_record__donation_project=project)
-        # 计算该捐赠项目的受捐总金额
-        project.get_donation_amount = \
-            items.aggregate(Sum('all_price'))['all_price__sum'] or 0
-        # 计算该捐赠记录的捐赠金额
-        record_price = items.filter(donation_record=record) \
-                           .aggregate(Sum('all_price'))['all_price__sum'] or 0
-        record.donation_amount = record_price
-        # 保存更新后的受捐项目和捐赠记录对象
-        project.save()
-        record.save()
+    # def save(self, *args, **kwargs):
+    #     print('donationItem。save（）')
+    #     # 保存捐赠物品时，自动更新物品价值
+    #     self.all_price = self.price * self.quantity
+    #     super().save(*args, **kwargs)
+    #     # 获取与该物品相关的捐赠记录对象
+    #     record = self.donation_record
+    #     # 获取与该记录相关的受捐项目对象
+    #     project = record.donation_project
+    #     # 获取该捐赠项目下所有物品
+    #     items = \
+    #         DonationItem.published.filter(donation_record__donation_project=project)
+    #     # 计算该捐赠项目的受捐总金额
+    #     project.get_donation_amount = \
+    #         items.aggregate(Sum('all_price'))['all_price__sum'] or 0
+    #     # 计算该捐赠记录的捐赠金额
+    #     record_price = items.filter(donation_record=record) \
+    #                        .aggregate(Sum('all_price'))['all_price__sum'] or 0
+    #     record.donation_amount = record_price
+    #     # 保存更新后的受捐项目和捐赠记录对象
+    #     project.save()
+    #     record.save()
 
     class Meta:
         verbose_name = '捐赠物资'
         verbose_name_plural = '捐赠物资'
+        ordering = ['donation_record', 'status', '-all_price']
 
     def __str__(self):
         return f'{self.name}_{self.all_price}元_{self.donation_record.id}'
 
 
-@receiver(pre_delete, sender=DonationItem)
+@receiver(pre_save, sender=DonationItem)
+def donation_item_pre_save(sender, instance, **kwargs):
+    print('DonationItem.request_item_pre_save')
+    instance.all_price = instance.quantity * instance.price
+    print(instance.all_price)
+
+
+@receiver(post_save, sender=DonationItem)
+def donation_item_save(sender, instance, **kwargs):
+    print('DonationItem.request_item_save')
+    record_id = instance.donation_record.id
+    record = DonationRecord.objects.get(id=record_id)
+    project_id = record.donation_project.id
+    project = DonationProject.objects.get(id=project_id)
+    print('保存前，项目筹集金额:', project.get_donation_amount)
+    project.get_donation_amount = DonationItem.published \
+                                      .filter(donation_record__donation_project=project) \
+                                      .aggregate(Sum('all_price'))['all_price__sum'] or 0
+    print('保存后，项目筹集金额:', project.get_donation_amount)
+
+    print('保存前，记录筹集金额:', record.donation_amount)
+    record.donation_amount = DonationItem.published.filter(donation_record=record) \
+                                 .aggregate(Sum('all_price'))['all_price__sum'] or 0
+    print('保存后，记录筹集金额:', record.donation_amount)
+    project.save()
+    record.save()
+    print('-' * 20)
+
+
+@receiver(post_delete, sender=DonationItem)
 def item_delete(sender, instance, **kwargs):
     # 1.删除物品对应照片文件
     # 获取要删除的物品照片路径
@@ -241,17 +274,23 @@ def item_delete(sender, instance, **kwargs):
     # 使用values方法将查询的结果限制为record字段。这样做是为了使查询结果中只包含不同的记录。
     # 使用distinct方法确保查询结果中只包含不同的记录。
     # 使用annotate方法在查询结果中添加first_item字段，该字段是使用子查询从每个记录的第一个item对象中获取的。
-    first_item_ids = DonationItem.published.annotate(
-        record=F('donation_record')
-    ).values('record').distinct().annotate(
-        first_item=Subquery(
-            DonationItem.published.filter(donation_record=OuterRef('record')).values('id')[:1]
-        )
-    ).values_list('first_item', flat=True)
-    # 这里使用了 values_list 方法来获取 first_item 字段的值，并将 flat 参数设置为 True 来将结果展平为一个列表。
-    # 然后，使用 filter 方法和 id__in 条件来获取所有与 first_items 中的 id 匹配的 DonationItem 对象的 QuerySet。
-    # 这样就可以方便地对每个对象进行保存。
-    first_items = DonationItem.published.filter(id__in=first_item_ids)
-    for item in first_items:
-        print('item_image_delete:item重新保存')
-        item.save()
+    # first_item_ids = DonationItem.published.annotate(
+    #     record=F('donation_record')
+    # ).values('record').distinct().annotate(
+    #     first_item=Subquery(
+    #         DonationItem.published.filter(donation_record=OuterRef('record')).values('id')[:1]
+    #     )
+    # ).values_list('first_item', flat=True)
+    # # 这里使用了 values_list 方法来获取 first_item 字段的值，并将 flat 参数设置为 True 来将结果展平为一个列表。
+    # # 然后，使用 filter 方法和 id__in 条件来获取所有与 first_items 中的 id 匹配的 DonationItem 对象的 QuerySet。
+    # # 这样就可以方便地对每个对象进行保存。
+    # first_items = DonationItem.published.filter(id__in=first_item_ids)
+    # for item in first_items:
+    #     print('item_image_delete:item重新保存')
+    #     item.save()
+    record_id = instance.donation_record.id
+    project_id = instance.donation_record.donation_project.id
+    record = DonationRecord.objects.get(id=record_id)
+    project = DonationProject.objects.get(id=project_id)
+    record.save()
+    project.save()

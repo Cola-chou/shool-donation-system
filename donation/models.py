@@ -1,11 +1,10 @@
 from django.core.validators import MinValueValidator
 from django.db import models
-from django.db.models import Sum
 
-import apps.item
+
+
 from apps.user.models import MyUser
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+
 
 
 class PublishedProjectManager(models.Manager):
@@ -47,14 +46,19 @@ class DonationProject(models.Model):
     published = PublishedProjectManager()  # 自定义管理器
 
     def save(self, *args, **kwargs):
-        print('model.save')
+        print('DonationProject.save（）')
         # # 计算目标捐赠价格
-        all_price = 0
-        from apps.item.models import RequestItem
+        request_all_price = 0
+        donation_all_price = 0
+        from apps.item.models import RequestItem, DonationItem
         for item in RequestItem.objects.filter(donation_project__id=self.id):
-            all_price += item.all_price
-        self.donation_amount = all_price
-        print('self.donation_amount =', all_price)
+            request_all_price += item.all_price
+        self.donation_amount = request_all_price
+        print(f'DonationProject.{self.id}.donation_amount =', request_all_price)
+        for item in DonationItem.published.filter(donation_record__donation_project_id=self.id):
+            donation_all_price += item.all_price
+        self.get_donation_amount = donation_all_price
+        print(f'DonationProject.{self.id}.get_donation_amount =', donation_all_price)
         return super().save(*args, **kwargs)
 
     class Meta:
@@ -91,20 +95,19 @@ class DonationRecord(models.Model):
     def save(self, *args, **kwargs):
         print('donationRecord。save（）')
         # 保存捐赠物品时，自动更新物品价值
-        super().save(*args, **kwargs)
+        # # 计算目标捐赠价格
+        all_price = 0
+        from apps.item.models import DonationItem
+        for item in DonationItem.published.filter(donation_record_id=self.id):
+            all_price += item.all_price
+        self.donation_amount = all_price
+        print(f'DonationRecord.{self.id}.donation_amount =', all_price)
+        return super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = '捐赠记录'
         verbose_name_plural = '捐赠记录'
+        ordering = ['donation_user', '-donation_amount']
 
     def __str__(self):
-        return f'{self.donation_project}_donation_record_{self.pk}'
-
-
-# @receiver(post_save, sender=DonationRecord)
-# def update_donation_project(sender, instance, **kwargs):
-#     print('hello')
-#     project = instance.donation_project
-#     amount = project.donation_records.aggregate(Sum('donation_amount'))['donation_amount__sum']
-#     project.get_donation_amount = amount
-#     project.save()
+        return f'{self.donation_project}_{self.donation_user}_记录{self.pk}'

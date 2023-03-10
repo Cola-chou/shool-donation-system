@@ -1,12 +1,12 @@
 from django.contrib import admin
 
-# Register your models here.
+
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.html import format_html
+
 
 from apps.item.models import DonationItem, RequestItem, Category
-from django.db.models import Sum, ImageField
-from apps.donation.models import DonationProject, DonationRecord
+from django.db.models import Sum
+from apps.donation.models import DonationProject
 
 
 @admin.register(Category)
@@ -15,28 +15,31 @@ class CategoryAdmin(admin.ModelAdmin):
     fields = ['name', 'slug']
 
 
-# @admin.register(DonationItem)
-# class DonationItemAdmin(admin.ModelAdmin):
-#     list_display = [
-#         'donation_record',
-#         'category',
-#         'name',
-#         'detail',
-#         'price',
-#         'quantity',
-#         'item_image']
-#     fields = [
-#         'donation_record',
-#         'category',
-#         'name',
-#         'detail',
-#         'price',
-#         'quantity',
-#         'item_image']
-#
-#     def get_changeform_initial_data(self, request):
-#         # admin创建物品对象页面自动填充指定字段
-#         return {'name': 'itemname'}
+@admin.register(DonationItem)
+class DonationItemAdmin(admin.ModelAdmin):
+    list_display = [
+        'donation_record',
+        'status',
+        'category',
+        'name',
+        'detail',
+        'quantity',
+        'all_price',
+        'item_image']
+    fields = [
+        'donation_record',
+        'category',
+        'name',
+        'detail',
+        'price',
+        'quantity',
+        'item_image']
+
+    def get_changeform_initial_data(self, request):
+        # admin创建物品对象页面自动填充指定字段
+        return {'name': 'itemname'}
+
+
 #
 # #
 # def delete_selected(self, request, obj):
@@ -121,16 +124,16 @@ class RequestItemItemAdmin(admin.ModelAdmin):
         """保存admin表之前，调用模型的save方法"""
         obj.save()
 
-    def save_related(self, request, form, formsets, change):
-        # print('save_related')
-        # 保存所有的 ManyToManyField 和 ForeignKey 关联对象，
-        for formset in formsets:
-            self.save_formset(request, form, formset, change=change)
-        project_id = request.POST.get('donation_project')
-        total_price = RequestItem.objects.exclude(all_price=None).aggregate(total_price=Sum('all_price'))['total_price']
-        project = DonationProject.objects.get(id=project_id)
-        project.donation_amount = total_price
-        project.save()
+    # def save_related(self, request, form, formsets, change):
+    #     # print('save_related')
+    #     # 保存所有的 ManyToManyField 和 ForeignKey 关联对象，
+    #     for formset in formsets:
+    #         self.save_formset(request, form, formset, change=change)
+    #     project_id = request.POST.get('donation_project')
+    #     total_price = RequestItem.objects.exclude(all_price=None).aggregate(total_price=Sum('all_price'))['total_price']
+    #     project = DonationProject.objects.get(id=project_id)
+    #     project.donation_amount = total_price
+    #     project.save()
 
     # 在第一段代码中（RequestItem的save方法），RequestItem 模型的 save 方法会在保存 RequestItem 对象时被自动调用。
     # 在该方法中，会自动更新 RequestItem 对象的 all_price 属性和关联的 donation_project 对象的 donation_amount 属性。

@@ -1,0 +1,99 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+}
+
+#i1dcv2 {
+    font-weight: 700;
+    font-size: large;
+    text-align: center;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 0px;
+    margin-left: 0px;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Helvetica, Roboto, Arial, "PingFang SC", "Hiragino Sans GB", "Microsoft Yahei", "Microsoft Jhenghei", sans-serif;
+}
+
+.logo path {
+    pointer-events: none;
+    fill: none;
+    stroke-linecap: round;
+    stroke-width: 7;
+    stroke: rgb(255, 255, 255);
+}
+
+.wechat-group img {
+    max-width: 220px;
+    height: auto;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    border-bottom-left-radius: 8px;
+    margin-top: 0px;
+    margin-right: auto;
+    margin-bottom: 0px;
+    margin-left: auto;
+    width: 100%;
+}
+
+.welcome-img img {
+    width: 100%;
+    max-width: 280px;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.fdb-block .text-h1, .fdb-block h1 {
+    font-size: 1.75rem;
+    margin-bottom: 0.5em;
+    margin-top: 0.3em;
+    font-weight: 400;
+}
+
+.fdb-block .text-h2, .fdb-block h2 {
+    font-size: 1rem;
+    margin-bottom: 0.5em;
+    margin-top: 0.3em;
+    font-weight: 400;
+}
+
+.fdb-block .text-h3, .fdb-block h3 {
+    font-size: 0.875rem;
+    margin-bottom: 0.5em;
+    margin-top: 0.3em;
+    font-weight: 400;
+}
+
+.c23387 {
+    background-image: url(https://template-1253409072.cos.ap-guangzhou.myqcloud.com/html-template/assets/img/thumb/3.jpg);
+}
+
+.c23614 {
+    background-image: url(https://template-1253409072.cos.ap-guangzhou.myqcloud.com/html-template/assets/img/thumb/11.jpg);
+}
+
+.c27395 {
+    padding: 10px;
+    width: 200px;
+    height: 100px;
+    /*background-color: #3fad37;*/
+}
+
+#is8zpv {
+    width: 200px;
+    height: 100px;
+    border: 1px solid;
+    background-color: #3fad37;
+}

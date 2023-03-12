@@ -1,53 +1,104 @@
 {% extends "base.html" %}
 {% load static %}
+{% load system_extras %}
 {% block content %}
-    <h1>个人资料</h1>
-    <div class="container mt-5">
-        <div class="row">
-            <div class="col-sm-3">
-                {% if user.avatar %}
-                    <img src="{{ user.avatar.url }}" alt="{{ user.username }}的头像" class="img-fluid">
-                {% else %}
-                    <img src="{% static "img/no_image.png" %}" alt="">
-                {% endif %}
-            </div>
-        </div>
-        <div class="col-sm-9">
-            <table class="table">
-                <tbody>
-                <tr>
-                    <th>用户名:</th>
-                    <td>{{ user.username }}</td>
-                </tr>
-                <tr>
-                    <th>邮箱:</th>
-                    <td>{{ user.email }}</td>
-                </tr>
-                <tr>
-                    <th>角色:</th>
-                    <td>{{ user.get_role_display }}</td>
-                </tr>
-                <tr>
-                    <th>手机号码:</th>
-                    <td>{{ user.mobile }}</td>
-                </tr>
-                <tr>
-                    <th>地址:</th>
-                    <td>{{ user.address }}</td>
-                </tr>
-                <tr>
-                    <th>微信账号:</th>
-                    <td>{{ user.weChat }}</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        <h1>捐赠记录</h1>
-        {% if records %}
-            <div class="col-sm-9">
-                <table class="table">
-                    <tbody>
-                    {% for record in records %}
+    <section class="section bg-gray">
+                <div class="container">
+                    <h1 class="mt-5 mb-4">个人资料</h1>
+                    <div class="row">
+                        <div class="col-md-3 mb-4">
+                            {% if user.avatar %}
+                                <img src="{{ user.avatar.url }}" alt="{{ user.username }}的头像" class="img-fluid rounded-circle">
+                            {% else %}
+                                <img src="{% static "img/no_image.png" %}" alt="" class="img-fluid rounded-circle">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <table class="table table-hover">
+                                <tbody>
+                                <tr>
+                                    <th>用户名:</th>
+                                    <td>{{ user.username }}</td>
+                                </tr>
+                                <tr>
+                                    <th>邮箱:</th>
+                                    <td>{{ user.email }}</td>
+                                </tr>
+                                <tr>
+                                    <th>角色:</th>
+                                    <td>{{ user.get_role_display }}</td>
+                                </tr>
+                                <tr>
+                                    <th>手机号码:</th>
+                                    <td>{{ user.mobile }}</td>
+                                </tr>
+                                <tr>
+                                    <th>地址:</th>
+                                    <td>{{ user.address }}</td>
+                                </tr>
+                                <tr>
+                                    <th>微信账号:</th>
+                                    <td>{{ user.weChat }}</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+        {#        <div class="container">#}
+        {#            <h1>个人资料</h1>#}
+        {#            <div class="container mt-5">#}
+        {#                <div class="row">#}
+        {#                    <div class="col-sm-3">#}
+        {#                        {% if user.avatar %}#}
+        {#                            <img src="{{ user.avatar.url }}" alt="{{ user.username }}的头像" class="img-fluid">#}
+        {#                        {% else %}#}
+        {#                            <img src="{% static "img/no_image.png" %}" alt="">#}
+        {#                        {% endif %}#}
+        {#                    </div>#}
+        {#                </div>#}
+        {#                <div class="col-sm-9">#}
+        {#                    <table class="table">#}
+        {#                        <tbody>#}
+        {#                        <tr>#}
+        {#                            <th>用户名:</th>#}
+        {#                            <td>{{ user.username }}</td>#}
+        {#                        </tr>#}
+        {#                        <tr>#}
+        {#                            <th>邮箱:</th>#}
+        {#                            <td>{{ user.email }}</td>#}
+        {#                        </tr>#}
+        {#                        <tr>#}
+        {#                            <th>角色:</th>#}
+        {#                            <td>{{ user.get_role_display }}</td>#}
+        {#                        </tr>#}
+        {#                        <tr>#}
+        {#                            <th>手机号码:</th>#}
+        {#                            <td>{{ user.mobile }}</td>#}
+        {#                        </tr>#}
+        {#                        <tr>#}
+        {#                            <th>地址:</th>#}
+        {#                            <td>{{ user.address }}</td>#}
+        {#                        </tr>#}
+        {#                        <tr>#}
+        {#                            <th>微信账号:</th>#}
+        {#                            <td>{{ user.weChat }}</td>#}
+        {#                        </tr>#}
+        {#                        </tbody>#}
+        {#                    </table>#}
+        {#                </div>#}
+        {#            </div>#}
+        {#        </div>#}
+        {#        <div class="container" style="background-color: red">#}
+        <div class="container">
+            <h1>捐赠记录</h1>
+            {% if records %}
+                {#                <div class="col-sm-9">#}
+                {% for record in records %}
+                    <table class="table">
+                        <tbody>
+
                         <tr>
                             <th>纪录{{ forloop.counter }}:</th>
                         </tr>
@@ -55,26 +106,85 @@
                             <th>所属捐赠项目:</th>
                             <td><a href="{% url "donation:project_detail" record.donation_project.id %}">{{ record.donation_project }}</a></td>
                         </tr>
-                        {#                        <tr>#}
-                        {#                            <th>捐赠状态:</th>#}
-                        {#                            <td>#}
-                        {#                                {{ record.get_status_display }}#}
-                        {#                            </td>#}
-                        {#                        </tr>#}
                         <tr>
                             <th>捐赠价值:</th>
                             <td>{{ record.donation_amount }}</td>
                         </tr>
-                        {#                        {% if record.status == '0' %}#}
                         <tr>
                             <td><a href="{% url "item:record_items_list" record.id %}">查看捐赠物品</a></td>
                         </tr>
-                        {#                        {% endif %}#}
-
-                    {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% endif %}
-    </div>
+                        </tbody>
+                    </table>
+                    {#                    <div class="row justify-content-between" style="background-color: yellow">#}
+                    <div class="row justify-content-between">
+                        {% show_record_items record.id %}
+                        {#                            <div class="col-md-8">#}
+                        {#                                <h5 class="font-weight-bold spanborder"><span>All Stories</span></h5>#}
+                        {#                                <div class="mb-3 d-flex justify-content-between">#}
+                        {#                                    <div class="pr-3 col-sm-6">#}
+                        {#                                        <h2 class="mb-1 h4 font-weight-bold">#}
+                        {#                                            <a class="text-dark" href="./article.html">Nearly 200 Great Barrier Reef coral species also live in the deep sea</a>#}
+                        {#                                        </h2>#}
+                        {#                                        <p>#}
+                        {#                                            There are more coral species lurking in the deep ocean that previously thought.#}
+                        {#                                        </p>#}
+                        {#                                        <div class="card-text text-muted small">#}
+                        {#                                            Jake Bittle in SCIENCE#}
+                        {#                                        </div>#}
+                        {#                                        <small class="text-muted">Dec 12 &middot; 5 min read</small>#}
+                        {#                                    </div>#}
+                        {#                                    <img class="col-sm-6" src="{% static "img/demo/blog8.jpg" %}">#}
+                        {#                                </div>#}
+                        {#                            </div>#}
+                        {#                        <div class="col-md-4 pl-4">#}
+                        {#                            <h5 class="font-weight-bold spanborder"><span>Popular</span></h5>#}
+                        {#                            <ol class="list-featured">#}
+                        {#                                <li>#}
+                        {#				<span>#}
+                        {#				<h6 class="font-weight-bold">#}
+                        {#				<a href="./article.html" class="text-dark">Did Supernovae Kill Off Large Ocean Animals?</a>#}
+                        {#				</h6>#}
+                        {#				<p class="text-muted">#}
+                        {#					Jake Bittle in SCIENCE#}
+                        {#				</p>#}
+                        {#				</span>#}
+                        {#                                </li>#}
+                        {#                                <li>#}
+                        {#				<span>#}
+                        {#				<h6 class="font-weight-bold">#}
+                        {#				<a href="./article.html" class="text-dark">Humans Reversing Climate Clock: 50 Million Years</a>#}
+                        {#				</h6>#}
+                        {#				<p class="text-muted">#}
+                        {#					Jake Bittle in SCIENCE#}
+                        {#				</p>#}
+                        {#				</span>#}
+                        {#                                </li>#}
+                        {#                                <li>#}
+                        {#				<span>#}
+                        {#				<h6 class="font-weight-bold">#}
+                        {#				<a href="./article.html" class="text-dark">Unprecedented Views of the Birth of Planets</a>#}
+                        {#				</h6>#}
+                        {#				<p class="text-muted">#}
+                        {#					Jake Bittle in SCIENCE#}
+                        {#				</p>#}
+                        {#				</span>#}
+                        {#                                </li>#}
+                        {#                                <li>#}
+                        {#				<span>#}
+                        {#				<h6 class="font-weight-bold">#}
+                        {#				<a href="./article.html" class="text-dark">Effective New Target for Mood-Boosting Brain Stimulation Found</a>#}
+                        {#				</h6>#}
+                        {#				<p class="text-muted">#}
+                        {#					Jake Bittle in SCIENCE#}
+                        {#				</p>#}
+                        {#				</span>#}
+                        {#                                </li>#}
+                        {#                            </ol>#}
+                        {#                        </div>#}
+                    </div>
+                {% endfor %}
+                {#                </div>#}
+            {% endif %}
+        </div>
+    </section>
 {% endblock %}

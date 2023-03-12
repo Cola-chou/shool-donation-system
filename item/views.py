@@ -109,7 +109,10 @@ def donation_item_change(request, item_id, record_id):
 
             return redirect('item:record_items_list', record_id)
     else:
-        # form = DonationItemChangeForm(initial=model_to_dict(donation_item))
+        # get请求
+        if donation_item.status != '0':
+            # 非法get请求，用户只能修改未审核过的物品
+            return redirect('account:profile')
         form = DonationItemChangeForm(instance=donation_item)
 
     context = {'form': form}

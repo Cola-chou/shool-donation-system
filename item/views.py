@@ -2,7 +2,10 @@ import os
 import shutil
 
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.http import HttpResponseNotAllowed, HttpResponse
+from django.views.decorators.http import require_POST
 from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from django.forms import model_to_dict
@@ -22,6 +25,30 @@ def record_items(request, record_id):
                                                               'record_id': record_id})
 
 
+# @require_POST
+@login_required(login_url='account:login')
+def donation_item_delete(request, record_id, item_id):
+    # if request.method == 'POST':
+    item = get_object_or_404(DonationItem,
+                             id=item_id)
+    if item.status == '0' and request.user.id == item.donation_record.donation_user.id:
+        item.delete()
+        record = get_object_or_404(DonationRecord,
+                                   id=record_id, )
+        messages.success(request, '物品已成功删除！')
+
+        if not record.donation_items.all():
+            record.delete()
+            return redirect('account:profile')
+    else:
+        return HttpResponse('只能删除自己的未被审核的物品')
+    return redirect('item:record_items_list', record_id)
+
+
+# else:
+#     return HttpResponseNotAllowed(['POST'])
+
+
 @login_required(login_url='account:login')
 def donation_item_create(request, request_id, project_id):
     # lambda函数：物品名称预填充
@@ -32,6 +59,7 @@ def donation_item_create(request, request_id, project_id):
     user_id = request.user.id
     print(request_item)
     if request.method == 'POST':
+        # post请求
         form = DonationItemForm(request.POST,
                                 request.FILES,
                                 request_id=request_id,
@@ -41,6 +69,7 @@ def donation_item_create(request, request_id, project_id):
             # 处理表单提交
             return redirect('donation:project_detail', pk=project_id)
     else:
+        # get请求
         initial = {
             'price': request_item.price,
             'name': has_rmb(request_item.category.name),
@@ -57,6 +86,7 @@ def donation_item_create(request, request_id, project_id):
     return render(request, 'donation_item_create.html', context)
 
 
+# @require_POST
 @login_required(login_url='account:login')
 def donation_item_change(request, item_id, record_id):
     # lambda函数：物品名称预填充
@@ -121,10 +151,10 @@ def donation_item_change(request, item_id, record_id):
     return render(request, 'donation_item_create.html', context)
 
 
-class DonationItemListView(ListView):
-    model = DonationItem
-    template_name = 'record_items_list.html'
-    context_object_name = 'items'
-
-    def get_queryset(self):
-        return super().get_queryset().filter(status='')
+# class DonationItemListView(ListView):
+#     model = DonationItem
+#     template_name = 'record_items_list.html'
+#     context_object_name = 'items'
+#
+#     def get_queryset(self):
+#         return super().get_queryset()

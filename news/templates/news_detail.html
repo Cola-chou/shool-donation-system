@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load system_extras %}
+{% block content %}
+    <section class="section bg-gray" style="padding-bottom: 0;">
+        <div class="container">
+            <h2>{{ new.title }}</h2>
+            <div style="padding-left: 10px">
+                发布时间{{ new.modified_time|date:'Y年m月d日 H:i:s' }}
+            </div>
+            <img src="{{ new.image.url }}" alt="">
+            <p style="font-size: large;padding: 20px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ new.body }}</p>
+            {% if projects %}
+                <div class="col-md-12">
+                    <h5 class="font-weight-bold spanborder"><span>相关捐赠项目</span></h5>
+                    {% for project in projects %}
+                        <div class="container">
+                            <div class="row justify-content-center parent">
+                                <div class="pr-3 col-md-9 pl-4 box1" style="border: 1px solid">
+                                    <p>
+                                        <b class="text-lg " style="font-size: large">项目名称：</b>
+                                        <a class="text-dark" style="font-size: medium" href="{% url 'donation:project_detail' project.id %}">{{ project.project_name }}</a>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <b class="text-lg " style="font-size: large">项目状态：</b>
+                                        <a class="text-dark" style="font-size: medium" href="#">{{ project.get_project_status_display }}</a>
+                                    </p>
+                                    <p>
+                                        <b class="text-lg " style="font-size: large">项目发起时间：</b>
+                                        <a class="text-dark" style="font-size: medium" href="#">{{ project.start_time }}</a>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <b class="text-lg " style="font-size: large">项目截止时间：</b>
+                                        <a class="text-dark" style="font-size: medium" href="#">{{ project.deadline }}</a>
+                                    </p>
+                                    <p>
+                                        <b class="text-lg " style="font-size: large">项目需求金额：</b>
+                                        <a class="text-dark" style="font-size: medium" href="#">{{ project.donation_amount }}元</a>
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <b class="text-lg " style="font-size: large">项目筹得金额：</b>
+                                        <a class="text-dark" style="font-size: medium" href="#">{{ project.get_donation_amount }}元</a>
+                                    </p>
+{#                                is_project_detail = False 捐赠按钮显示关闭#}
+                                    {% show_request_items project.id False %}
+                                    {% if project.project_status != '3' and project.project_status != '2' %}
+                                        <p>
+                                            <a href="{% url "donation:project_detail" project.id %}" class="btn btn-sm btn-danger">捐赠</a>
+                                        </p>
+                                    {% else %}
+                                        <p>
+                                            <a href="{% url "donation:project_detail" project.id %}" class="btn btn-sm btn-primary">查看</a>
+                                        </p>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-3 pl-1 float-right box2" style="border: 1px solid">
+                                    {% show_donation_users project.id %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            <div class="col-md-12" style="margin-top: 100px;font-size: large">
+                {% if prev_news %}
+                    <a href="{{ prev_news.get_absolute_url }}" style="float: left;color: black">上一篇：{{ prev_news.title }}</a>
+                {% endif %}
+                {% if next_news %}
+                    <a href="{{ next_news.get_absolute_url }}" style="float: right;color: black">下一篇：{{ next_news.title }}</a>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+{% endblock %}

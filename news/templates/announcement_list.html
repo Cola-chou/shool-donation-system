@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block title %}
+    <title>公告</title>
+{% endblock %}
+
+{% block content %}
+    <section class="section bg-gray">
+        <div class="container">
+            <header class="section-header">
+                <h2>最新公告</h2>
+                {% if not announcement_list %}
+                    <small style="color: rgba(255,0,0,0.72);font-size: large">暂无公告，请等待管理员发布</small>
+                    <div style="background-color: whitesmoke;width: 100%;height: 150px"></div>
+                {% endif %}
+            </header>
+            {% if announcement_list %}
+                {% for announcement in announcement_list %}
+                    <div class="row gap-y gap-2" style="background-color: #1c1806;margin-top: 30px">
+                        <p style="color: whitesmoke;padding: 5px 10px;margin-bottom: 0">
+                            <span><b>标题: </b>{{ announcement.title }}</span>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        </p>
+                    </div>
+                    <div class="row gap-y gap-2" style="background-color: #1c1806">
+                        <p style="color: whitesmoke;padding: 5px 10px;margin-bottom: 5px">
+                            <span><b>发布者: </b>{{ announcement.author }}</span>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                            <span><b>发布时间: </b>{{ announcement.created_time }}</span>
+                        </p>
+                    </div>
+                    <div class="row gap-y gap-2" style="padding-top: 20px;background-color: #f4f0e9;border: 1px solid">
+                        <p style="padding-left: 10px;">
+                            &nbsp; &nbsp; &nbsp;&nbsp;{{ announcement.content }}
+                        </p>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div style="background-color: whitesmoke;width: 100%;height: 300px"></div>
+            {% endif %}
+        </div>
+    </section>
+{% endblock %}

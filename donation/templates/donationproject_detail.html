@@ -1,21 +1,140 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load system_extras %}
 {% block content %}
-    <section class="section bg-gray">
+    <section class="section bg-gray" style="padding-bottom: 20px">
         <div class="container">
-            <h1>{{ object.project_name }}</h1>
-            <p>{{ object.project_desc }}</p>
-            <p>目标捐赠金额：{{ object.donation_amount }}</p>
-            <p>当前筹集金额：{{ object.get_donation_amount }}</p>
-            <p>状态：{{ object.get_project_status_display }}</p>
-            <p>发起时间：{{ object.start_time }}</p>
-            <p>截止时间：{{ object.deadline }}</p>
-            <h1>请求物资</h1>
-            {% if request_items %}
-                {% for item in request_items %}
-                    <p>{{ item.name }}</p>
-                    <img src="{{ item.item_iamge.url }}" alt="">
-                    <a href="{% url "item:donation_item_create" item.donation_project.id item.id %}">点击捐赠</a>
-                {% endfor %}
+            <!-- 项目 row -->
+            {#        style="border: 1px solid"#}
+            <div class="row">
+                <div class="col-md-7">
+                    <p style="margin-bottom: 5px">
+                        <b class="text-danger " style="font-size: xxx-large;">
+                            {{ object.project_name }}
+                        </b>
+                    </p>
+                    <p style="">
+                        <b class="text-lg text-dark" style="font-size: large"> &nbsp;&nbsp;
+                            {{ object.project_desc }}</b>
+                    </p>
+                    <p><b class="text-lg" style="font-size: large;">目标捐赠金额:</b>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="font-size: large;color: black">{{ object.donation_amount }}</span>
+                    </p>
+                    <p><b class="text-lg" style="font-size: large;">当前筹集金额:</b>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="font-size: large;color: black">{{ object.get_donation_amount }}</span>
+                    </p>
+                    <p><b class="text-lg" style="font-size: large;">项目状态:</b>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        {% if object.project_status != '3' %}
+                            <span style="font-size: large;color: red">{{ object.get_project_status_display }}</span>
+                        {% else %}
+                            <span style="font-size: large;color: black">{{ object.get_project_status_display }}</span>
+                        {% endif %}
+                    </p>
+                    <p><b class="text-lg" style="font-size: large;">发起时间:</b>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="font-size: large;color: black">{{ object.start_time }}</span>
+                    </p>
+                    <p><b class="text-lg" style="font-size: large;">截止时间:</b>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="font-size: large;color: black">{{ object.deadline }}</span>
+                    </p>
+                </div>
+                <div class="col-md-5">
+                    {% if news.image %}
+                        <img src="{{ news.image.url }}" alt="{{ object.project_name }}" class="w-100 h-100 object-fit-cover">
+                    {% else %}
+                        <img src="{% static "img/no_image.png" %}" alt="" class="w-100 h-100 object-fit-cover rounded-circle">
+                    {% endif %}
+                </div>
+            </div>
+            <!-- 捐赠物资 row -->
+            <div class="row" style="">
+                <div class="co-md-12" style="width: 100%">
+                    {#                    <h1 class="mt-5 mb-4" style="background-color: rgba(0,0,0,0.4);color: whitesmoke;padding-left: 20px;font-size: xx-large;width: 100%">请求物资</h1>#}
+                    <h1 class="mt-5 mb-4" style="background-color: rgba(0,0,0,0.4);color: whitesmoke;padding-left: 20px;font-size: xx-large;width: 100%">请求物资
+                        <button class="btn  {% if total_donation_amount %}btn-danger{% else %}btn-primary{% endif %} float-right" style="margin-top: 5px;margin-right: 10px">
+                            {% if total_donation_amount %}
+                                <a href="{% url "account:create_pdf" %}" target="_blank" style="color: whitesmoke">生成捐款证书</a>
+                            {% else %}
+                                <a href="{% url "account:profile" %}" style="color: whitesmoke">我的捐赠</a>
+                            {% endif %}
+                        </button>
+                    </h1>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3 d-flex justify-content-between">
+                        {% if object.project_status == '1' %}
+                             {% show_request_items object.id True True %}
+                        {% else %}
+                            {% show_request_items object.id True False %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            <!--捐赠者row -->
+            <div class="row" style="">
+                <div class="co-md-12" style="width: 100%;margin-bottom: 100px">
+                    <h1 class="mt-5 mb-4" style="background-color: rgba(0,0,0,0.4);color: whitesmoke;padding-left: 20px;font-size: xx-large;width: 100%">捐助鸣谢</h1>
+                    {% if paginator.count == 0 %}
+                        <p class="text-danger text-xl-center">
+                            <b style="font-size: x-large">暂未收到捐助，期待您的捐助!</b>
+                            <br>
+                            <b style="font-size: x-large">祝您生活愉快!</b>
+                        </p>
+                    {% endif %}
+                    {% for result in results %}
+                        <div style="border: 1px solid" class="parent">
+                            <div class="row border p-3">
+                                <div class="col-2 justify-content-center">
+                                    {% if result.user.avatar %}
+                                        <img class="avatar" style="width: 150px;height: 150px" src="{{ result.user.avatar.url }}" alt="{{ result.user.username }}" title="{{ result.user.username }}">
+                                    {% else %}
+                                        <img class="avatar" style="width: 150px;height: 150px" src="{% static "img/no_image.png" %}" alt="" title="{{ result.user.username }}">
+                                    {% endif %}
+                                </div>
+                                <div class="col-10">
+                                    <div class="row">
+                                        <div class="col-4">
+                                            <h4>{{ result.user.username }}</h4>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <ul>
+                                                {% for item in result.items %}
+                                                    <li>{{ item.name }} x {{ item.quantity }}</li>
+                                                {% endfor %}
+                                            </ul>
+                                            <p>总金额：{{ result.total_amount }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% if results.has_other_pages %}
+                <div class=" row" style="background-color: green;margin-bottom:0;font-size: large">
+                    <div class="pagination col-md-12 justify-content-center">
+                            <span class="step-links">
+                                {% if results.has_previous %}
+                                    <a href="?page=1">&laquo; 第一页</a>
+                                    <a href="?page={{ results.previous_page_number }}">上一页</a>
+                                {% endif %}
+                                <span class="current-page">
+                                    第 {{ results.number }} 页，共 {{ results.paginator.num_pages }} 页
+                                </span>
+                                {% if results.has_next %}
+                                    <a href="?page={{ results.next_page_number }}">下一页</a>
+                                    <a href="?page={{ results.paginator.num_pages }}">最后一页 &raquo;</a>
+                                {% endif %}
+                            </span>
+                    </div>
+                </div>
             {% endif %}
         </div>
     </section>

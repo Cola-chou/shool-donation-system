@@ -3,188 +3,125 @@
 {% load system_extras %}
 {% block content %}
     <section class="section bg-gray">
-                <div class="container">
-                    <h1 class="mt-5 mb-4">个人资料</h1>
-                    <div class="row">
-                        <div class="col-md-3 mb-4">
-                            {% if user.avatar %}
-                                <img src="{{ user.avatar.url }}" alt="{{ user.username }}的头像" class="img-fluid rounded-circle">
-                            {% else %}
-                                <img src="{% static "img/no_image.png" %}" alt="" class="img-fluid rounded-circle">
-                            {% endif %}
-                        </div>
-                        <div class="col-md-9">
-                            <table class="table table-hover">
-                                <tbody>
-                                <tr>
-                                    <th>用户名:</th>
-                                    <td>{{ user.username }}</td>
-                                </tr>
-                                <tr>
-                                    <th>邮箱:</th>
-                                    <td>{{ user.email }}</td>
-                                </tr>
-                                <tr>
-                                    <th>角色:</th>
-                                    <td>{{ user.get_role_display }}</td>
-                                </tr>
-                                <tr>
-                                    <th>手机号码:</th>
-                                    <td>{{ user.mobile }}</td>
-                                </tr>
-                                <tr>
-                                    <th>地址:</th>
-                                    <td>{{ user.address }}</td>
-                                </tr>
-                                <tr>
-                                    <th>微信账号:</th>
-                                    <td>{{ user.weChat }}</td>
-                                </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-
-        {#        <div class="container">#}
-        {#            <h1>个人资料</h1>#}
-        {#            <div class="container mt-5">#}
-        {#                <div class="row">#}
-        {#                    <div class="col-sm-3">#}
-        {#                        {% if user.avatar %}#}
-        {#                            <img src="{{ user.avatar.url }}" alt="{{ user.username }}的头像" class="img-fluid">#}
-        {#                        {% else %}#}
-        {#                            <img src="{% static "img/no_image.png" %}" alt="">#}
-        {#                        {% endif %}#}
-        {#                    </div>#}
-        {#                </div>#}
-        {#                <div class="col-sm-9">#}
-        {#                    <table class="table">#}
-        {#                        <tbody>#}
-        {#                        <tr>#}
-        {#                            <th>用户名:</th>#}
-        {#                            <td>{{ user.username }}</td>#}
-        {#                        </tr>#}
-        {#                        <tr>#}
-        {#                            <th>邮箱:</th>#}
-        {#                            <td>{{ user.email }}</td>#}
-        {#                        </tr>#}
-        {#                        <tr>#}
-        {#                            <th>角色:</th>#}
-        {#                            <td>{{ user.get_role_display }}</td>#}
-        {#                        </tr>#}
-        {#                        <tr>#}
-        {#                            <th>手机号码:</th>#}
-        {#                            <td>{{ user.mobile }}</td>#}
-        {#                        </tr>#}
-        {#                        <tr>#}
-        {#                            <th>地址:</th>#}
-        {#                            <td>{{ user.address }}</td>#}
-        {#                        </tr>#}
-        {#                        <tr>#}
-        {#                            <th>微信账号:</th>#}
-        {#                            <td>{{ user.weChat }}</td>#}
-        {#                        </tr>#}
-        {#                        </tbody>#}
-        {#                    </table>#}
-        {#                </div>#}
-        {#            </div>#}
-        {#        </div>#}
-        {#        <div class="container" style="background-color: red">#}
         <div class="container">
-            <h1>捐赠记录</h1>
-            {% if records %}
-                {#                <div class="col-sm-9">#}
-                {% for record in records %}
-                    <table class="table">
+            <div style="background-color: rgba(0,0,0,0.4);color: whitesmoke;">
+                <b class="mt-5 mb-4" style="padding-left: 20px;font-size: xx-large">个人资料</b>
+            </div>
+            <div class="row" style="margin-bottom: 20px">
+                <div class="col-md-3 mb-4">
+                    {% if user.avatar %}
+                        <img src="{{ user.avatar.url }}" style="width: 250px;height: 250px;margin-top: 40px;border: 1px solid" alt="{{ user.username }}的头像" class="avatar img-fluid rounded-circle">
+                    {% else %}
+                        <img src="{% static "img/no_image.png" %}"  style="width: 250px;height: 250px;margin-top: 40px;border: 1px solid" alt="{{ user.username }}的头像" class="avatar img-fluid rounded-circle">
+                    {% endif %}
+                </div>
+                <div class="col-md-9">
+                    <table class="table table-hover">
                         <tbody>
+                        <tr>
+                            <th><b class="text-lg" style="font-size: large">用户名:</b></th>
+                            <td>{{ user.username }}</td>
+                        </tr>
+                        <tr>
+                            <th><b class="text-lg" style="font-size: large">邮箱:</b></th>
+                            <td>{{ user.email }}</td>
+                        </tr>
+                        <tr>
+                            <th><b class="text-lg" style="font-size: large">身份:</b></th>
+                            <td>{{ user.get_role_display }}</td>
+                        </tr>
+                        <tr>
+                            <th><b class="text-lg" style="font-size: large">手机号码:</b></th>
+                            {% if  user.mobile %}
+                                <td>{{ user.mobile }}</td>
+                            {% else %}
+                                <td>点击修改按钮添加</td>
+                            {% endif %}
 
-                        <tr>
-                            <th>纪录{{ forloop.counter }}:</th>
                         </tr>
                         <tr>
-                            <th>所属捐赠项目:</th>
-                            <td><a href="{% url "donation:project_detail" record.donation_project.id %}">{{ record.donation_project }}</a></td>
+                            <th><b class="text-lg" style="font-size: large">地址:</b></th>
+                            {% if user.address %}
+                                <td>{{ user.address }}</td>
+                            {% else %}
+                                <td>点击修改按钮添加</td>
+                            {% endif %}
+
                         </tr>
                         <tr>
-                            <th>捐赠价值:</th>
-                            <td>{{ record.donation_amount }}</td>
-                        </tr>
-                        <tr>
-                            <td><a href="{% url "item:record_items_list" record.id %}">查看捐赠物品</a></td>
+                            <th><b class="text-lg" style="font-size: large">微信账号:</b></th>
+                            {% if user.weChat %}
+                                <td>{{ user.weChat }}</td>
+                            {% else %}
+                                <td>点击修改按钮添加</td>
+                            {% endif %}
                         </tr>
                         </tbody>
                     </table>
-                    {#                    <div class="row justify-content-between" style="background-color: yellow">#}
-                    <div class="row justify-content-between">
-                        {% show_record_items record.id %}
-                        {#                            <div class="col-md-8">#}
-                        {#                                <h5 class="font-weight-bold spanborder"><span>All Stories</span></h5>#}
-                        {#                                <div class="mb-3 d-flex justify-content-between">#}
-                        {#                                    <div class="pr-3 col-sm-6">#}
-                        {#                                        <h2 class="mb-1 h4 font-weight-bold">#}
-                        {#                                            <a class="text-dark" href="./article.html">Nearly 200 Great Barrier Reef coral species also live in the deep sea</a>#}
-                        {#                                        </h2>#}
-                        {#                                        <p>#}
-                        {#                                            There are more coral species lurking in the deep ocean that previously thought.#}
-                        {#                                        </p>#}
-                        {#                                        <div class="card-text text-muted small">#}
-                        {#                                            Jake Bittle in SCIENCE#}
-                        {#                                        </div>#}
-                        {#                                        <small class="text-muted">Dec 12 &middot; 5 min read</small>#}
-                        {#                                    </div>#}
-                        {#                                    <img class="col-sm-6" src="{% static "img/demo/blog8.jpg" %}">#}
-                        {#                                </div>#}
-                        {#                            </div>#}
-                        {#                        <div class="col-md-4 pl-4">#}
-                        {#                            <h5 class="font-weight-bold spanborder"><span>Popular</span></h5>#}
-                        {#                            <ol class="list-featured">#}
-                        {#                                <li>#}
-                        {#				<span>#}
-                        {#				<h6 class="font-weight-bold">#}
-                        {#				<a href="./article.html" class="text-dark">Did Supernovae Kill Off Large Ocean Animals?</a>#}
-                        {#				</h6>#}
-                        {#				<p class="text-muted">#}
-                        {#					Jake Bittle in SCIENCE#}
-                        {#				</p>#}
-                        {#				</span>#}
-                        {#                                </li>#}
-                        {#                                <li>#}
-                        {#				<span>#}
-                        {#				<h6 class="font-weight-bold">#}
-                        {#				<a href="./article.html" class="text-dark">Humans Reversing Climate Clock: 50 Million Years</a>#}
-                        {#				</h6>#}
-                        {#				<p class="text-muted">#}
-                        {#					Jake Bittle in SCIENCE#}
-                        {#				</p>#}
-                        {#				</span>#}
-                        {#                                </li>#}
-                        {#                                <li>#}
-                        {#				<span>#}
-                        {#				<h6 class="font-weight-bold">#}
-                        {#				<a href="./article.html" class="text-dark">Unprecedented Views of the Birth of Planets</a>#}
-                        {#				</h6>#}
-                        {#				<p class="text-muted">#}
-                        {#					Jake Bittle in SCIENCE#}
-                        {#				</p>#}
-                        {#				</span>#}
-                        {#                                </li>#}
-                        {#                                <li>#}
-                        {#				<span>#}
-                        {#				<h6 class="font-weight-bold">#}
-                        {#				<a href="./article.html" class="text-dark">Effective New Target for Mood-Boosting Brain Stimulation Found</a>#}
-                        {#				</h6>#}
-                        {#				<p class="text-muted">#}
-                        {#					Jake Bittle in SCIENCE#}
-                        {#				</p>#}
-                        {#				</span>#}
-                        {#                                </li>#}
-                        {#                            </ol>#}
-                        {#                        </div>#}
-                    </div>
-                {% endfor %}
-                {#                </div>#}
-            {% endif %}
+                    <button class="btn btn-primary">
+                        <a href="{% url "account:profile_edit" %}" style="color: whitesmoke">修改</a>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="container">
+            <div style="background-color: rgba(0,0,0,0.4);color: whitesmoke;">
+                <b style="padding-left: 20px;font-size: xx-large">捐赠记录</b>
+                <button class="btn  {% if total_donation_amount %}btn-danger{% else %}btn-primary{% endif %} float-right" style="margin-top: 12px;margin-right: 10px">
+                    {% if total_donation_amount %}
+                        <a href="{% url "account:create_pdf" %}" target="_blank" style="color: whitesmoke">生成捐款证书</a>
+                    {% else %}
+                        <a href="{% url "donation:project_list" %}" style="color: whitesmoke">捐赠</a>
+                    {% endif %}
+                </button>
+            </div>
+            <p style="text-align: right;padding-top: 5px;margin-bottom: 0;">
+                {% if total_donation_amount is None %}
+                    <b>暂无通过的捐赠记录</b>
+                {% else %}
+                    <b>共计捐款：{{ total_donation_amount }}元</b>
+                {% endif %}
+            </p>
+            <div style="">
+                {% if records %}
+                    {% for record in records %}
+                        {% if record.donation_items.all %}
+                            <div style="padding-left: 12px;padding-bottom: 10px;margin-bottom: 5px;border: 1px solid;">
+                                <p><b class="text-lg" style="font-size: large">记录{{ forloop.counter }}</b></p>
+                                <p><b class="text-lg" style="font-size: large;">所属捐赠项目:</b>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    {% with record.donation_project as project %}
+                                        {% if project.project_status != '0' %}
+                                            <a href="{% url "donation:project_detail" project.id %}">{{ project }}</a>
+                                        {% else %}
+                                            {{ project }}
+                                        {% endif %}
+                                    {% endwith %}
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <b class="text-lg" style="font-size: large">捐赠价值:</b>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    {{ record.donation_amount }}
+                                </p>
+                                <p><b class="text-lg" style="font-size: large;">待审核:</b>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    {{ record.check_number }}
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <b class="text-lg" style="font-size: large">审核通过:</b>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    {{ record.checked_number }}
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <b class="text-lg" style="font-size: large;">共计捐赠物品:</b>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                                    {{ record.all_items_count }}
+                                </p>
+                                <button class="btn btn-primary">
+                                    <a href="{% url "item:record_items_list" record.id %}" style="color: whitesmoke">查看捐赠物品</a>
+                                </button>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            </div>
         </div>
     </section>
 {% endblock %}

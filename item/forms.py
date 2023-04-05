@@ -10,9 +10,11 @@ from ..user.models import MyUser
 class DonationItemForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
+        # 从参数字典中获取关键值
         request_id = kwargs.pop('request_id')
         project_id = kwargs.pop('project_id')
         user_id = kwargs.pop('user_id')
+        # 根据关键值创建对象
         self.request_item = get_object_or_404(RequestItem,
                                               id=request_id)
         self.user = get_object_or_404(MyUser,
@@ -21,8 +23,7 @@ class DonationItemForm(forms.ModelForm):
                                          id=project_id)
         super().__init__(*args, **kwargs)
 
-    # def clean_name(self):
-    #     name = self.cleaned_data['name']
+
     def clean(self):
         # 验证失败标志
         valid_flag = True
@@ -44,7 +45,7 @@ class DonationItemForm(forms.ModelForm):
             valid_flag = False
         if valid_flag:
             # 验证成功
-            # 创建
+            # 获取物品类别
             category = get_object_or_404(Category,
                                          id=self.request_item.category.id)
             price = self.request_item.price
@@ -59,23 +60,21 @@ class DonationItemForm(forms.ModelForm):
                 price=price,
                 item_image=image
             )
-            # 已存在记录
             try:
+                # 若用户在此项目中存在捐赠记录，则更新捐赠记录
                 exist_record = DonationRecord.objects.get(donation_user_id=self.user.id,
                                                           donation_project_id=self.project.id)
                 donation_item.donation_record = exist_record
                 donation_item.save()
             except ObjectDoesNotExist:
-                # 创建DonationRecord对象
+                # 用户在该项目中无捐赠记录
+                # 创建DonationRecord对象，生成捐赠记录
                 donation_record = DonationRecord(
                     donation_user=self.user,
                     donation_project=self.project,
-                    status='0'
                 )
-
                 # 将DonationItem对象和DonationRecord对象关联
                 donation_item.donation_record = donation_record
-
                 # 保存DonationRecord对象和DonationItem对象到数据库中
                 donation_record.save()
                 donation_item.save()
@@ -85,8 +84,8 @@ class DonationItemForm(forms.ModelForm):
         model = DonationItem
         fields = ['name', 'detail', 'quantity', 'item_image']
         widgets = {
-            'price': forms.HiddenInput(attrs={'value': RequestItem.price}),
-            'quantity': forms.NumberInput(attrs={'min': 1}),
+            'price': forms.HiddenInput(attrs={'value': RequestItem.price}), # 模板该字段渲染时隐藏
+            'quantity': forms.NumberInput(attrs={'min': 1}), # 模板渲染该字段为数字类型
         }
 
 

@@ -1,0 +1,32 @@
+{% load static %}
+<div class="row gap-x-3 justify-content-center" style="margin-bottom: 20px;">
+    {% for item in items %}
+        <div class="col-lg row" style="">
+            <div class="card shadow-1 hover-shadow-6" style="width: 200px;border: 1px solid;margin-bottom: 20px">
+                {% if item.item_image %}
+                    <img src="{{ item.item_image.url }}" alt="{{ item.name }}" class="card-img-top news-image"/>
+                {% else %}
+                    <img src="{% static "img/no_image.png" %}" alt="{{ item.name }}" class="card-img-top news-image"/>
+                {% endif %}
+                <div class="card-body flexbox flex-column" style=" padding: 5px">
+                    <h6>
+                        物品名称:
+                        <br>
+                        &nbsp&nbsp&nbsp&nbsp{{ item.name }}
+                        <br>
+                        需求量:
+                        <br>
+                        &nbsp&nbsp&nbsp&nbsp{{ item.quantity }}
+                    </h6>
+                    {% if is_project_detail %}
+                        {% if is_published %}
+                            <p>
+                                <a href="{% url "item:donation_item_create" project_id item.id %}" class="btn btn-sm btn-danger">捐赠</a>
+                            </p>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>

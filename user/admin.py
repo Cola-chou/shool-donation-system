@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin, GroupAdmin
 from django.contrib.auth.models import Group
 
-from apps.user.models import MyUser, Announcement
+from apps.user.models import MyUser
 from django.contrib.auth.forms import UserChangeForm, UserCreationForm, AdminPasswordChangeForm
 
 
@@ -22,11 +22,9 @@ class MyUserAdmin(UserAdmin):
     change_password_form = AdminPasswordChangeForm
 
     fieldsets = (
-        # (None, {'fields': ('email', 'password')}),
         (('个人信息'), {'fields': ('avatar','username', 'password', 'email', 'mobile',
                                'role', 'first_name', 'last_name',)}),
         (('权限'), {'fields': ('groups',)}),
-        # (('Important dates'), {'fields': ('last_login', 'date_joined')}),
     )
 
 

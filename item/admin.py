@@ -1,8 +1,7 @@
 from django.contrib import admin
 
-
 from django.core.exceptions import ObjectDoesNotExist
-
+from django.utils.html import format_html
 
 from apps.item.models import DonationItem, RequestItem, Category
 from django.db.models import Sum
@@ -15,29 +14,67 @@ class CategoryAdmin(admin.ModelAdmin):
     fields = ['name', 'slug']
 
 
+class StatusSearcher(admin.SimpleListFilter):
+    title = '状态'
+    parameter_name = 'status'
+
+    def lookups(self, request, model_admin):
+        return [
+            ('0', '待审核'),
+            ('1', '暂存'),
+            ('2', '捐赠完成'),
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(status__icontains=self.value())
+        else:
+            return queryset
+
+
 @admin.register(DonationItem)
 class DonationItemAdmin(admin.ModelAdmin):
     list_display = [
-        'donation_record',
-        'status',
-        'category',
         'name',
+        'category',
         'detail',
         'quantity',
         'all_price',
-        'item_image']
+        'donation_record',
+        'Status',
+        'image_tag',
+    ]
+    # 设置 列表中可点击的字段，若无list_display_links 则默认第一个字段添加a标签可点击
+    list_display_links=['name','donation_record',]
     fields = [
         'donation_record',
         'category',
+        'status',
         'name',
         'detail',
         'price',
         'quantity',
         'item_image']
+    # 可搜索字段，可通过'__'搜索外键字段
+    search_fields = ['name',
+                     'detail',
+                     'category__name',
+                     'donation_record__donation_user__username',
+                     'donation_record__donation_project__project_name']
+    actions = ['make_donation_success']
+    list_filter = [StatusSearcher,]
 
-    def get_changeform_initial_data(self, request):
-        # admin创建物品对象页面自动填充指定字段
-        return {'name': 'itemname'}
+    # 自定义action
+    def make_donation_success(self, request, queryset):
+        # 自定义action 改变物品状态为成功捐赠
+        rows_updated = queryset.update(status='2')
+        if rows_updated == 1:
+            message_bit = "成功修改 1 件物品"
+        else:
+            message_bit = "成功修改 %s 件物品" % rows_updated
+        self.message_user(request, "%s" % message_bit)
+
+    make_donation_success.short_description = "完成捐赠"
 
 
 #
@@ -148,10 +185,11 @@ class RequestItemItemAdmin(admin.ModelAdmin):
 
     def delete_selected(self, request, obj):
         related_project_id = obj[0].donation_project.id
-        # 遍历选中捐赠记录
+        # 遍历选中的请求物资
         for o in obj:
-            # 删除选中捐赠记录
+            # 删除选中的请求物资
             o.delete()
+            pass
         print('item\\admin\\request\\delete_selected()')
         try:
             items = RequestItem.objects.filter(donation_project_id=related_project_id)

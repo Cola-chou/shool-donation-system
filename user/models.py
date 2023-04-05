@@ -4,6 +4,7 @@ import shutil
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser, PermissionsMixin
+from django.db.models import Sum
 
 
 class MyUser(AbstractUser, PermissionsMixin):
@@ -18,21 +19,16 @@ class MyUser(AbstractUser, PermissionsMixin):
                '{}/{}'.format(instance.username,
                               filename)
 
-    STUDENT = '0'
-    TEACHER = '1'
-    OTHER_STAFF = '2'
-    NON_STAFF = '3'
     ROLE_CHOICES = [
-        (STUDENT, '学生'),
-        (TEACHER, '教师'),
-        (OTHER_STAFF, '其他工作人员'),
-        (NON_STAFF, '社会人士'),
+        ('0', '学生'),
+        ('1', '教师'),
+        ('2', '其他工作人员'),
+        ('3', '社会人士'),
     ]
     email = models.EmailField('邮件', null=True, unique=True)
     avatar = models.ImageField('头像', upload_to=userAvatars_directory_path,
                                blank=True,
                                null=True)
-
     role = models.CharField('人群', max_length=20,
                             choices=ROLE_CHOICES,
                             null=True)
@@ -47,13 +43,25 @@ class MyUser(AbstractUser, PermissionsMixin):
                               blank=True,
                               null=True)
 
+    def get_donations_for_project(self, project_id):
+        '''获取一个字典：用户在某捐赠项目中捐赠的总价值和物品列表'''
+        donations = self.donation_records.filter(donation_project_id=project_id)
+        total_amount = donations.aggregate(Sum('donation_amount'))['donation_amount__sum'] or 0
+        items = []
+        for donation in donations:
+            items.extend(list(donation.donation_items.filter(status__in=['1', '2'])))
+        return {'total_amount': total_amount, 'items': items}
+
+    def get_all_donations(self):
+        '''获取一个字典：用户参与的所有捐赠项目中捐赠的总价值和物品列表'''
+        donations = self.donation_records.all()
+        total_amount = donations.aggregate(Sum('donation_amount'))['donation_amount__sum'] or 0
+        items = []
+        for donation in donations:
+            items.extend(list(donation.donation_items.filter(status__in=['1', '2'])))
+        return {'total_amount': total_amount, 'items': items}
+
     def save(self, *args, **kwargs):
-        # # 创建以用户名为名的文件夹
-        # user_folder = os.path.join(settings.AVATAR_ROOT, self.username)
-        # os.makedirs(user_folder, exist_ok=True)
-        # # 生成头像文件路径
-        # avatar_path = os.path.join(user_folder, str(self.avatar))
-        # # 调用父类的save方法，保存头像文件
         super().save(*args, **kwargs)
 
     class Meta(AbstractUser.Meta):
@@ -62,19 +70,3 @@ class MyUser(AbstractUser, PermissionsMixin):
 
     def __str__(self):
         return self.username
-
-
-class Announcement(models.Model):
-    title = models.CharField('公告标题', max_length=100)
-    content = models.TextField('公告内容')
-    created_time = models.DateTimeField('创建时间',
-                                        auto_now_add=True)
-    modify_time = models.DateTimeField('更新时间',
-                                       auto_now=True)
-
-    class Meta:
-        verbose_name = '公告'
-        verbose_name_plural = '公告'
-
-    def __str__(self):
-        return self.title

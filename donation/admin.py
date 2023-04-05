@@ -23,15 +23,37 @@ class RequestItemInline(StackedInline):
         'item_image']
 
 
+class StatusSearcher(admin.SimpleListFilter):
+    title = '状态'
+    parameter_name = 'status'
+
+    def lookups(self, request, model_admin):
+        return [
+            ('0', '编辑'),
+            ('1', '发起'),
+            ('2', '完成'),
+            ('3', '截止'),
+        ]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            return queryset.filter(project_status__icontains=self.value())
+        else:
+            return queryset
+
+
+
 @admin.register(DonationProject)
 class DonationProjectAdmin(admin.ModelAdmin):
     inlines = [RequestItemInline]
-    list_display = ['project_name', 'project_status', 'get_donation_amount', 'donation_amount', 'start_time', 'deadline', ]
+    list_display = ['project_name', 'Status', 'get_donation_amount', 'donation_amount','Speed', 'start_time', 'deadline', ]
     fields = ['project_name', 'project_desc', 'project_status', 'project_news',
               'deadline', 'start_time']
     # fields = [f.name for f in DonationProject._meta.get_fields() if f.name not in ('donationrecords', 'donation_items','records')]
     readonly_fields = ['start_time']
-
+    search_fields = ("project_name",)
+    # 自定义搜索器
+    list_filter = [StatusSearcher]
     # def save_related(self, request, form, formsets, change):
     #     """
     #     在admin保存时先保存物品再保存捐赠项目
@@ -55,9 +77,9 @@ class DonationRecordAdmin(admin.ModelAdmin):
     inlines = [DonationItemInline]
     list_display = ['donation_user', 'donation_project', 'donation_amount', 'donation_time']
     readonly_fields = ['donation_amount']
-    fields = ['status', 'donation_user', 'donation_project', 'donation_amount']
+    fields = ['donation_user', 'donation_project', 'donation_amount']
     actions = ['delete_selected']
-
+    search_fields = ("donation_user__username",)
 
     # def save_related(self, request, form, formsets, change):
     #     """
@@ -132,3 +154,6 @@ class DonationRecordAdmin(admin.ModelAdmin):
                 print('donation\\admin\\delete_selected()错误!!!')
 
     delete_selected.short_description = '删除所选的 捐赠记录'
+
+
+

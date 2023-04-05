@@ -11,4 +11,6 @@ urlpatterns = [
     path('change/<int:record_id>/<int:item_id>/',
          views.donation_item_change,
          name='donation_item_change'),
+    path('delete/<int:record_id>/<int:item_id>/',
+         views.donation_item_delete, name='donation_item_delete'),
 ]

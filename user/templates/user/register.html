@@ -1,17 +1,23 @@
-{% extends "../../../../mysystem/mysystem/../../../../templates/base.html" %}
+{% extends "base.html" %}
+
 {% block title %}
-    Sign up
+    <title>注册</title>
 {% endblock %}
+
 {% block content %}
-    <h1>
-        Sign up
-    </h1>
-    <div class="module">
-        <p>Enter your details to create an account:</p>
-        <form method="post">
-            {{ form.as_p }}
-            {% csrf_token %}
-            <p><input type="submit" value="Create my account"></p>
-        </form>
-    </div>
+    <section class="section bg-gray">
+        <div class="container">
+            <h1>
+                注册
+            </h1>
+            <div class="module">
+                <p>输入您的详细信息以创建一个帐户:</p>
+                <form method="post">
+                    {{ form.as_p }}
+                    {% csrf_token %}
+                    <p><input type="submit" value="创建账户"></p>
+                </form>
+            </div>
+        </div>
+    </section>
 {% endblock %}

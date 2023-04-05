@@ -1,47 +1,49 @@
 {% load static %}
-<div class="col-md-12">
-    <h5 class="font-weight-bold spanborder"><span>我捐赠的物资</span></h5>
-    {% for item in items %}
-        {#        <div class="mb-3 d-flex justify-content-between" style="background-color: blue">#}
-        <div class="mb-3 d-flex justify-content-between">
-            <div class="pr-3 col-sm-8">
-                <p>
-                    <b class="text-lg" style="font-size: large">物品名称：</b>
-                    <a class="text-dark" style="font-size: medium" href="#">{{ item.name }}</a>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <b class="text-lg" style="font-size: large">物品状态：</b>
-                    <a class="text-dark" style="font-size: medium" href="#">{{ item.get_status_display }}</a>
-                </p>
-                <p>
-                    <b class="text-lg" style="font-size: large">物品类别：</b>
-                    <a class="text-dark" style="font-size: medium" href="#">{{ item.category.name }}</a>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <b class="text-lg" style="font-size: large">物品描述：</b>
-                    <a class="text-dark" style="font-size: medium" href="#">{{ item.detail }}</a>
-
-                </p>
-                <p>
-                    <b class="text-lg" style="font-size: large">物品数量：</b>
-                    <a class="text-dark" style="font-size: medium" href="#">{{ item.quantity }}</a>
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                    <b class="text-lg" style="font-size: large">物品价值：</b>
-                    <a class="text-dark" style="font-size: medium" href="#">{{ item.all_price }}</a>
-                </p>
-                {#                <div class="card-text text-muted small">#}
-                {#                    Jake Bittle in SCIENCE#}
-                {#                </div>#}
-                {#                <small class="text-muted">Dec 12 &middot; 5 min read</small>#}
-                {% if item.status == '0' %}
+<div id="items{{ record.id }}" class="collapse">
+    <div class="col-md-12">
+        <h5 class="font-weight-bold spanborder"><span>我捐赠的物资</span></h5>
+        {% for item in items %}
+            {#        <div class="mb-3 d-flex justify-content-between" style="background-color: blue">#}
+            <div class="mb-3 d-flex justify-content-between">
+                <div class="pr-3 col-sm-8">
                     <p>
-                        <a href="{% url "item:donation_item_change" record_id item.id %}" class="btn btn-sm btn-warning">修改</a>
+                        <b class="text-lg" style="font-size: large">物品名称：</b>
+                        <a class="text-dark" style="font-size: medium" href="#">{{ item.name }}</a>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <b class="text-lg" style="font-size: large">物品状态：</b>
+                        <a class="text-dark" style="font-size: medium" href="#">{{ item.get_status_display }}</a>
                     </p>
+                    <p>
+                        <b class="text-lg" style="font-size: large">物品类别：</b>
+                        <a class="text-dark" style="font-size: medium" href="#">{{ item.category.name }}</a>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <b class="text-lg" style="font-size: large">物品描述：</b>
+                        <a class="text-dark" style="font-size: medium" href="#">{{ item.detail }}</a>
+
+                    </p>
+                    <p>
+                        <b class="text-lg" style="font-size: large">物品数量：</b>
+                        <a class="text-dark" style="font-size: medium" href="#">{{ item.quantity }}</a>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <b class="text-lg" style="font-size: large">物品价值：</b>
+                        <a class="text-dark" style="font-size: medium" href="#">{{ item.all_price }}</a>
+                    </p>
+                    {#                <div class="card-text text-muted small">#}
+                    {#                    Jake Bittle in SCIENCE#}
+                    {#                </div>#}
+                    {#                <small class="text-muted">Dec 12 &middot; 5 min read</small>#}
+                    {% if item.status == '0' %}
+                        <p>
+                            <a href="{% url "item:donation_item_change" record_id item.id %}" class="btn btn-sm btn-warning">修改</a>
+                        </p>
+                    {% endif %}
+                </div>
+                {% if item.item_image %}
+                    <img class="col-sm-4" src="{{ item.item_image.url }}">
+                {% else %}
+                    <img class="col-sm-4" src="{% static "img/no_image.png" %}">
                 {% endif %}
             </div>
-            {% if item.item_image %}
-                <img class="col-sm-4" src="{{ item.item_image.url }}">
-            {% else %}
-                <img class="col-sm-4" src="{% static "img/no_image.png" %}">
-            {% endif %}
-        </div>
-    {% endfor %}
+        {% endfor %}
+    </div>
 </div>

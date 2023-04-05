@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <section class="section bg-gray">
+        <div class="container">
+            <h1>编辑个人资料</h1>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <input type="submit" value="保存">
+            </form>
+        </div>
+    </section>
+{% endblock %}

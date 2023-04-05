@@ -6,15 +6,16 @@ from django.db import models
 from django.db.models import Sum
 from django.db.models.signals import pre_delete, post_delete, post_save, pre_save
 from django.dispatch import receiver
+from django.utils.html import format_html
 
 from ..donation.models import DonationRecord, DonationProject
-
+from ..user.models import MyUser
 
 
 class Category(models.Model):
-    name = models.CharField(max_length=200,
+    name = models.CharField('物品类型', max_length=200,
                             db_index=True)
-    slug = models.SlugField(max_length=200, unique=True)
+    slug = models.SlugField('物品slug', max_length=200, unique=True)
 
     class Meta:
         ordering = ['name']
@@ -26,6 +27,7 @@ class Category(models.Model):
 
 
 class RequestItem(models.Model):
+    # 自定义请求物资图片路径方法
     def itemImage_directory_path(instance, filename):
         dirs = f'requestItems_image/{instance.donation_project.id}/{instance.id}'
         dirs = os.path.join(settings.MEDIA_ROOT, dirs)
@@ -152,11 +154,7 @@ class DonationItem(models.Model):
                                     instance.id,
                                     filename)
 
-    status_choice = [
-        ('0', '待审核'),
-        ('1', '暂存'),
-        ('2', '捐赠成功'),
-    ]
+    status_choice = [('0', '待审核'), ('1', '暂存'), ('2', '捐赠完成'), ]
 
     donation_record = models.ForeignKey(DonationRecord,
                                         verbose_name='所属捐赠记录',
@@ -166,10 +164,7 @@ class DonationItem(models.Model):
                                  verbose_name='物品类别',
                                  related_name='donation_items',
                                  on_delete=models.CASCADE)
-    status = models.CharField('状态', max_length=10,
-                              choices=status_choice,
-                              default='0',
-                              blank=True)
+    status = models.CharField('状态', max_length=10, choices=status_choice, default='0', blank=True)
     name = models.CharField('物品名称', max_length=50)
     detail = models.CharField('物品描述', max_length=100)
     price = models.DecimalField('物品价格', max_digits=10,
@@ -188,12 +183,30 @@ class DonationItem(models.Model):
                                     blank=True,
                                     validators=[MinValueValidator \
                                                     (0.01, message="价值必须大于0.01")])
-    item_image = models.ImageField(upload_to=itemImage_directory_path,
-                                   verbose_name='物品照片',
-                                   blank=True,
-                                   null=True)
+    item_image = models.ImageField(upload_to=itemImage_directory_path, verbose_name='物品照片', blank=True, null=True)
+
     objects = models.Manager()
     published = PublishedItemsManager()
+
+    # 自定义admin状态显示方法
+    def Status(self):
+        if self.status == '0':
+            format_td = format_html('<span style="padding:2px;background-color:red;color:white">待审核&nbsp;</span>')
+        elif self.status == '1':
+            format_td = format_html('<span style="padding:2px;background-color:blue;color:white">暂&nbsp;&nbsp;存</span>')
+        elif self.status == '2':
+            format_td = format_html('<span style="padding:2px;background-color:green;color:white">捐赠完成</span>')
+        return format_td
+
+    Status.short_description = "物品状态"
+
+    def image_tag(self):
+        if self.item_image:
+            return format_html('<img src="{}" height="50"/>'.format(self.item_image.url))
+        else:
+            return format_html('无图片')
+
+    image_tag.short_description = '物品图片'  # 此处为了方便显示修改页面的 label 标题
 
     # def save(self, *args, **kwargs):
     #     print('donationItem。save（）')
@@ -242,12 +255,14 @@ def donation_item_save(sender, instance, **kwargs):
     project_id = record.donation_project.id
     project = DonationProject.objects.get(id=project_id)
     print('保存前，项目筹集金额:', project.get_donation_amount)
+    # 更新捐赠项目获得捐赠总价值
     project.get_donation_amount = DonationItem.published \
                                       .filter(donation_record__donation_project=project) \
                                       .aggregate(Sum('all_price'))['all_price__sum'] or 0
     print('保存后，项目筹集金额:', project.get_donation_amount)
 
     print('保存前，记录筹集金额:', record.donation_amount)
+    # 更新捐赠记录总捐赠值
     record.donation_amount = DonationItem.published.filter(donation_record=record) \
                                  .aggregate(Sum('all_price'))['all_price__sum'] or 0
     print('保存后，记录筹集金额:', record.donation_amount)

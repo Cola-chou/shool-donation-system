@@ -1,9 +1,10 @@
 from django.core.validators import MinValueValidator
 from django.db import models
-
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils.html import format_html
 
 from apps.user.models import MyUser
-
 
 
 class PublishedProjectManager(models.Manager):
@@ -16,7 +17,7 @@ class DonationProject(models.Model):
         ('0', '编辑'),
         ('1', '发起'),
         ('2', '完成'),
-        ('3', '截止'),
+        ('3', '未完成'),
     ]
     project_name = models.CharField('捐赠项目', max_length=100)
     project_desc = models.CharField('项目介绍', max_length=200)
@@ -27,7 +28,8 @@ class DonationProject(models.Model):
                                      null=True,
                                      on_delete=models.SET_NULL)
     project_status = models.CharField('项目状态', max_length=10,
-                                      choices=status_choice)
+                                      choices=status_choice,
+                                      default='0')
     start_time = models.DateTimeField('发起时间', auto_now_add=True)
     deadline = models.DateTimeField('截止时间')
     get_donation_amount = models.DecimalField('当前筹集金额', max_digits=10,
@@ -44,6 +46,27 @@ class DonationProject(models.Model):
     objects = models.Manager()  # 默认管理器
     published = PublishedProjectManager()  # 自定义管理器
 
+    def Speed(self):
+        count = round(self.get_donation_amount / self.donation_amount * 100)
+        print(self.get_donation_amount, self.donation_amount, f'{count}%')
+        return format_html('<progress max="100" value="{}"></progress> {}%', count, count)
+
+    Speed.short_description = "当前进度"
+
+    # 自定义admin状态显示方法
+    def Status(self):
+        if self.project_status == '0':
+            format_td = format_html('<span style="padding:2px;background-color:gray;color:white">编辑</span>')
+        elif self.project_status == '1':
+            format_td = format_html('<span style="padding:2px;background-color:blue;color:white">发起</span>')
+        elif self.project_status == '2':
+            format_td = format_html('<span style="padding:2px;background-color:green;color:white">完成</span>')
+        elif self.project_status == '3':
+            format_td = format_html('<span style="padding:2px;background-color:red;color:white">未完成</span>')
+        return format_td
+
+    Status.short_description = "当前状态"
+
     def save(self, *args, **kwargs):
         print('DonationProject.save（）')
         # # 计算目标捐赠价格
@@ -58,22 +81,21 @@ class DonationProject(models.Model):
             donation_all_price += item.all_price
         self.get_donation_amount = donation_all_price
         print(f'DonationProject.{self.id}.get_donation_amount =', donation_all_price)
+        if self.donation_amount <= self.get_donation_amount and self.project_status != '3':
+            print('项目筹集完毕 目的金额：{} 实际金额：{} 项目状态：（{}）->（完成）'.format(self.donation_amount, self.get_donation_amount, self.get_project_status_display()))
+            self.project_status = '2'
         return super().save(*args, **kwargs)
 
     class Meta:
         verbose_name = '捐赠项目'
         verbose_name_plural = '捐赠项目'
+        ordering = ['-start_time','-deadline']
 
     def __str__(self):
         return f'{self.project_name}'
 
 
 class DonationRecord(models.Model):
-    status_choice = [
-        ('0', '审核'),
-        ('1', '暂存'),
-        ('2', '完成'),
-    ]
     donation_user = models.ForeignKey(MyUser,
                                       verbose_name='捐赠者',
                                       related_name='donation_records',
@@ -87,9 +109,6 @@ class DonationRecord(models.Model):
                                           decimal_places=2,
                                           null=False,
                                           default=0)
-    status = models.CharField('捐赠状态',
-                              max_length=10,
-                              choices=status_choice)
 
     def save(self, *args, **kwargs):
         print('donationRecord。save（）')
@@ -109,4 +128,14 @@ class DonationRecord(models.Model):
         ordering = ['donation_user', '-donation_amount']
 
     def __str__(self):
-        return f'{self.donation_project}_{self.donation_user}_记录{self.pk}'
+        return f'#{self.pk}_[{self.donation_project}]@{self.donation_user}'
+
+
+@receiver(post_save, sender=DonationRecord)
+def del_empty_record(sender, instance, **kwargs):
+    '''捐赠记录保存时自动删除空record'''
+    items = instance.donation_items.all()
+    if not items:
+        print('删除空record')
+        record = DonationRecord.objects.get(id=instance.id)
+        record.delete()

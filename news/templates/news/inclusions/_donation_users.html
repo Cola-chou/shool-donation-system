@@ -1,0 +1,27 @@
+{% load static %}
+<h5 class="font-weight-bold spanborder"><span>捐助者 {{ users|length }}</span></h5>
+<ul class="d-flex flex-wrap flex-grow-2 mb-n2" style="list-style: none;padding: 0 10px">
+    {% if users %}
+        {% for user in users %}
+            <li class="mb-2 mr-2">
+                {% if user.avatar %}
+                    <img class="avatar" src="{{ user.avatar.url }}" alt="{{ user.username }}" title="{{ user.username }}">
+                {% else %}
+                    <img class="avatar" src="{% static "img/no_image.png" %}" alt="" title="{{ user.username }}">
+                {% endif %}
+            </li>
+        {% endfor %}
+    {% else %}
+        <p class="text-danger text-xl-center" style="padding: 0">
+            <b style="font-size: large">暂未收到捐助，期待您的捐助!</b>
+            <br>
+            <b style="font-size: large">祝您生活愉快!</b>
+        </p>
+    {% endif %}
+
+</ul>
+{% if users|length == limit_number %}
+    <div class="" style="text-align: center;margin-top: 10px">
+        <a href="{% url "donation:project_detail" project_id %}" class="btn btn-sm btn-danger">查看更多</a>
+    </div>
+{% endif %}

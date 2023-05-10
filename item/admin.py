@@ -15,6 +15,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 
 class StatusSearcher(admin.SimpleListFilter):
+    # 状态选择器
     title = '状态'
     parameter_name = 'status'
 
@@ -45,7 +46,7 @@ class DonationItemAdmin(admin.ModelAdmin):
         'image_tag',
     ]
     # 设置 列表中可点击的字段，若无list_display_links 则默认第一个字段添加a标签可点击
-    list_display_links=['name','donation_record',]
+    list_display_links = ['name', 'donation_record', ]
     fields = [
         'donation_record',
         'category',
@@ -62,7 +63,7 @@ class DonationItemAdmin(admin.ModelAdmin):
                      'donation_record__donation_user__username',
                      'donation_record__donation_project__project_name']
     actions = ['make_donation_success']
-    list_filter = [StatusSearcher,]
+    list_filter = [StatusSearcher, ]
 
     # 自定义action
     def make_donation_success(self, request, queryset):
@@ -132,18 +133,36 @@ class DonationItemAdmin(admin.ModelAdmin):
 #     record.save()
 
 
+class RequestItemProjectsSearcher(StatusSearcher):
+    # 自定义搜素控件
+    def lookups(self, request, model_admin):
+        # 数据库选项
+        project_list = DonationProject.objects.values_list('project_name')
+        project_list =[(name[0],name[0]) for name in project_list]
+        print('RequestItem项目选择器选项:',project_list)
+        return project_list
+    def queryset(self, request, queryset):
+        if self.value():
+            print('当前选择:',self.value())
+            return queryset.filter(donation_project__project_name__icontains=self.value())
+        else:
+            return queryset
+
 @admin.register(RequestItem)
 class RequestItemItemAdmin(admin.ModelAdmin):
     actions = ['delete_selected']
     list_display = [
-        'donation_project',
-        'category',
         'name',
+        'category',
         'detail',
         'price',
         'quantity',
-        'item_image',
-        'all_price', ]
+        'image_tag',
+        'all_price',
+        'donation_project',
+    ]
+    list_display_links = ['name','donation_project']
+    list_filter = [RequestItemProjectsSearcher, ]
     fields = [
         'donation_project',
         'category',

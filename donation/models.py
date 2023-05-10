@@ -130,12 +130,12 @@ class DonationRecord(models.Model):
     def __str__(self):
         return f'#{self.pk}_[{self.donation_project}]@{self.donation_user}'
 
-
-@receiver(post_save, sender=DonationRecord)
-def del_empty_record(sender, instance, **kwargs):
-    '''捐赠记录保存时自动删除空record'''
-    items = instance.donation_items.all()
-    if not items:
-        print('删除空record')
-        record = DonationRecord.objects.get(id=instance.id)
-        record.delete()
+# 保存记录对象后自动删除空对象会引发 提交捐赠物品清单的保存错误
+# @receiver(post_save, sender=DonationRecord)
+# def del_empty_record(sender, instance, **kwargs):
+#     '''捐赠记录保存时自动删除空record'''
+#     items = instance.donation_items.all()
+#     if not items:
+#         print('删除空record')
+#         record = DonationRecord.objects.get(id=instance.id)
+#         record.delete()

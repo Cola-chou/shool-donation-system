@@ -23,7 +23,6 @@ class DonationItemForm(forms.ModelForm):
                                          id=project_id)
         super().__init__(*args, **kwargs)
 
-
     def clean(self):
         # 验证失败标志
         valid_flag = True
@@ -44,6 +43,7 @@ class DonationItemForm(forms.ModelForm):
             self.add_error('detail', f'请将xx替换为自己的描述')
             valid_flag = False
         if valid_flag:
+            print('验证成功')
             # 验证成功
             # 获取物品类别
             category = get_object_or_404(Category,
@@ -62,10 +62,12 @@ class DonationItemForm(forms.ModelForm):
             )
             try:
                 # 若用户在此项目中存在捐赠记录，则更新捐赠记录
-                exist_record = DonationRecord.objects.get(donation_user_id=self.user.id,
-                                                          donation_project_id=self.project.id)
-                donation_item.donation_record = exist_record
-                donation_item.save()
+                exist_record,create = DonationRecord.objects.get_or_create(donation_user_id=self.user.id,
+                                                                    donation_project_id=self.project.id)
+                if create:
+                    print(exist_record)
+                    donation_item.donation_record = exist_record
+                    donation_item.save()
             except ObjectDoesNotExist:
                 # 用户在该项目中无捐赠记录
                 # 创建DonationRecord对象，生成捐赠记录
@@ -84,8 +86,8 @@ class DonationItemForm(forms.ModelForm):
         model = DonationItem
         fields = ['name', 'detail', 'quantity', 'item_image']
         widgets = {
-            'price': forms.HiddenInput(attrs={'value': RequestItem.price}), # 模板该字段渲染时隐藏
-            'quantity': forms.NumberInput(attrs={'min': 1}), # 模板渲染该字段为数字类型
+            'price': forms.HiddenInput(attrs={'value': RequestItem.price}),  # 模板该字段渲染时隐藏
+            'quantity': forms.NumberInput(attrs={'min': 1}),  # 模板渲染该字段为数字类型
         }
 
 

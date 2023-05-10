@@ -6,6 +6,7 @@ from django.contrib.admin import StackedInline
 from django.core.exceptions import ObjectDoesNotExist
 
 
+# 内联的请求物资操控面板
 class RequestItemInline(StackedInline):
     # 继承自StackedInline
     # 当xx admin中指定了inlines = [xxInline]时
@@ -23,6 +24,7 @@ class RequestItemInline(StackedInline):
         'item_image']
 
 
+# 自定义捐赠项目状态选择菜单栏
 class StatusSearcher(admin.SimpleListFilter):
     title = '状态'
     parameter_name = 'status'
@@ -42,17 +44,22 @@ class StatusSearcher(admin.SimpleListFilter):
             return queryset
 
 
-
-@admin.register(DonationProject)
+@admin.register(DonationProject)  # 在admin中注册捐赠项目admin
+# 捐赠项目admin类
 class DonationProjectAdmin(admin.ModelAdmin):
+    # 内联类名：捐赠项目admin界面将会内联请求物资的admin界面
     inlines = [RequestItemInline]
-    list_display = ['project_name', 'Status', 'get_donation_amount', 'donation_amount','Speed', 'start_time', 'deadline', ]
+    # 查询到的数据列表显示的字段
+    list_display = ['project_name', 'Status', 'get_donation_amount', 'donation_amount',
+                    'Speed', 'start_time', 'deadline', ]
+    # 可以修改的字段
     fields = ['project_name', 'project_desc', 'project_status', 'project_news',
               'deadline', 'start_time']
-    # fields = [f.name for f in DonationProject._meta.get_fields() if f.name not in ('donationrecords', 'donation_items','records')]
+    # 只读不能修改的字段
     readonly_fields = ['start_time']
+    # 可以通过搜索器搜索的字段
     search_fields = ("project_name",)
-    # 自定义搜索器
+    # 自定义搜索菜单栏
     list_filter = [StatusSearcher]
     # def save_related(self, request, form, formsets, change):
     #     """
@@ -65,6 +72,7 @@ class DonationProjectAdmin(admin.ModelAdmin):
     #     super().save_related(request, form, formsets, change)
 
 
+# 内联的捐赠物资操控面板
 class DonationItemInline(StackedInline):
     model = DonationItem
     min_num = 0
@@ -72,7 +80,8 @@ class DonationItemInline(StackedInline):
     readonly_fields = ['all_price']
 
 
-@admin.register(DonationRecord)
+@admin.register(DonationRecord)  # 在admin中注册捐赠记录admin
+# 捐赠记录admin类
 class DonationRecordAdmin(admin.ModelAdmin):
     inlines = [DonationItemInline]
     list_display = ['donation_user', 'donation_project', 'donation_amount', 'donation_time']
@@ -154,6 +163,3 @@ class DonationRecordAdmin(admin.ModelAdmin):
                 print('donation\\admin\\delete_selected()错误!!!')
 
     delete_selected.short_description = '删除所选的 捐赠记录'
-
-
-

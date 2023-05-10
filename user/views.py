@@ -1,3 +1,4 @@
+import os
 from operator import itemgetter
 from random import randint
 
@@ -20,6 +21,7 @@ from django.contrib.auth import views as auth_views
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 
+from mysystem import settings
 from .forms import MyLoginForm, MyRegistrationForm, MyUserForm
 
 # 动态获取用户模型对象,此处为MyUser
@@ -32,6 +34,70 @@ User = get_user_model()
 
 def index(request):
     return render(request, 'user/index.html')
+
+def url_fetcher(url):
+    if url.startswith(settings.MEDIA_URL):
+        path = os.path.join(settings.MEDIA_ROOT, url.replace(settings.MEDIA_URL, ''))
+        with open(path, 'rb') as f:
+            return dict(string=f.read(), mime_type='image/jpeg')
+    else:
+        return weasyprint.default_url_fetcher(url)
+
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.units import inch
+from reportlab.lib.pagesizes import letter
+from PyPDF2 import PdfFileWriter, PdfReader
+from io import BytesIO
+from PIL import Image
+from pdf2image import convert_from_bytes
+
+# def create_pdf(request, self=None):
+#     # 获取用户所有的通过审核的捐赠物品
+#     items = DonationItem.published.filter(donation_record__donation_user_id=request.user.id)
+#     if items:
+#         # 获得该用户参与的所有的捐赠项目
+#         projects = DonationProject.objects.filter(donation_records__donation_user_id=request.user.id)
+#         # 获取用户捐赠的所有通过审核物品的总金额
+#         total_amount = DonationItem.published.filter(donation_record__donation_user_id=request.user.id).aggregate(Sum('all_price'))['all_price__sum'] or 0
+#         # 生成pdf页面
+#         buffer = BytesIO()
+#         c = canvas.Canvas(buffer, pagesize=letter)
+#         c.drawString(2 * inch, 10.5 * inch, "捐赠证书")
+#         c.drawString(2 * inch, 10 * inch, "账号：{}".format(request.user.username))
+#         # c.drawString(2 * inch, 9.5 * inch, "学号：{}".format(request.user.student_number))
+#         # 添加用户头像到pdf
+#         if request.user.avatar:
+#             img_temp = BytesIO(request.user.avatar.read())
+#             images = convert_from_bytes(img_temp.read())
+#             img = images[0]
+#             img_temp.close()
+#             w, h = img.size
+#             c.drawImage(Image.open(BytesIO(img.tobytes())), 0, 8.5 * inch, w / 4, h / 4)
+#         else:
+#             c.drawString(2 * inch, 9 * inch, "头像：无")
+#         c.drawString(2 * inch, 8.5 * inch, "捐赠总金额：{}元".format(total_amount))
+#         c.drawString(2 * inch, 8 * inch, "参与的项目：")
+#         for idx, project in enumerate(projects):
+#             c.drawString(2.5 * inch, (7.5 - idx * 0.3) * inch, "- {}".format(project.title))
+#         c.drawString(2 * inch, 6.5 * inch, "捐赠物品：")
+#         for idx, item in enumerate(items):
+#             c.drawString(2.5 * inch, (6 - idx * 0.3) * inch, "- {} x{}".format(item.name, item.quantity))
+#         c.showPage()
+#         c.save()
+#
+#         buffer.seek(0)
+#         new_pdf = PdfReader(buffer)
+#         output_pdf = PdfFileWriter()
+#         for page in new_pdf.pages:
+#             output_pdf.addPage(page)
+#         response = HttpResponse(content_type='application/pdf')
+#         response['Content-Disposition'] = 'filename={}的捐赠证书.pdf'.format(request.user.username)
+#         output_pdf.write(response)
+#         return response
+#     else:
+#         messages.success(request, '未查询到您的捐赠记录！')
+#         return redirect('account:profile')
 
 
 def create_pdf(request, self=None):
@@ -55,8 +121,8 @@ def create_pdf(request, self=None):
         response['Content-Disposition'] = 'filename={}的捐赠证书.pdf'.format(request.user.username)
         weasyprint.HTML(string=html).write_pdf(response,
                                                stylesheets=[
-                                                   # weasyprint.CSS('..css/pdf.css')
-                                               ])
+                                               #     # weasyprint.CSS('..css/pdf.css')
+                                               ],)
         return response
     else:
         messages.success(request, '未查询到您的捐赠记录！')

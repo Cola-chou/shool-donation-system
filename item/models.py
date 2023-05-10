@@ -64,6 +64,13 @@ class RequestItem(models.Model):
                                    verbose_name='物品照片',
                                    blank=True,
                                    null=True)
+    def image_tag(self):
+        if self.item_image:
+            return format_html('<img src="{}" height="50"/>'.format(self.item_image.url))
+        else:
+            return format_html('无图片')
+
+    image_tag.short_description = '物品图片'  # 此处为了方便显示修改页面的 label 标题
 
     # def save(self, *args, **kwargs):
     #     print('save')

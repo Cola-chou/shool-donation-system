@@ -16,7 +16,7 @@ class CustomUserAdminForm(UserChangeForm):
 
 
 class MyUserAdmin(UserAdmin):
-    list_display = ['username', 'password', 'role', 'mobile']
+    list_display = ['username','role', 'mobile','email']
     # 自定义用户表单
     form = CustomUserAdminForm
     # 自定义用户创建表单

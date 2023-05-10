@@ -36,6 +36,7 @@ class StatusSearcher(admin.SimpleListFilter):
 @admin.register(DonationItem)
 class DonationItemAdmin(admin.ModelAdmin):
     list_display = [
+        'id',
         'name',
         'category',
         'detail',
@@ -48,6 +49,7 @@ class DonationItemAdmin(admin.ModelAdmin):
     # 设置 列表中可点击的字段，若无list_display_links 则默认第一个字段添加a标签可点击
     list_display_links = ['name', 'donation_record', ]
     fields = [
+        'id',
         'donation_record',
         'category',
         'status',
@@ -56,19 +58,27 @@ class DonationItemAdmin(admin.ModelAdmin):
         'price',
         'quantity',
         'item_image']
+    readonly_fields = ['id']
+
     # 可搜索字段，可通过'__'搜索外键字段
     search_fields = ['name',
                      'detail',
                      'category__name',
                      'donation_record__donation_user__username',
-                     'donation_record__donation_project__project_name']
+                     'donation_record__donation_project__project_name', 'id']
     actions = ['make_donation_success']
     list_filter = [StatusSearcher, ]
 
-    # 自定义action
+    # 自定义修改状态action
     def make_donation_success(self, request, queryset):
         # 自定义action 改变物品状态为成功捐赠
+        queryset_tmp = queryset
+        # 更改选中物品状态
+        # update不会触发save的信号机制,且update后queryset生成器被清空
+        # 所以还要将queryset拷贝一份用于手动save
         rows_updated = queryset.update(status='2')
+        for q in queryset_tmp:
+            q.save()
         if rows_updated == 1:
             message_bit = "成功修改 1 件物品"
         else:
@@ -138,15 +148,17 @@ class RequestItemProjectsSearcher(StatusSearcher):
     def lookups(self, request, model_admin):
         # 数据库选项
         project_list = DonationProject.objects.values_list('project_name')
-        project_list =[(name[0],name[0]) for name in project_list]
-        print('RequestItem项目选择器选项:',project_list)
+        project_list = [(name[0], name[0]) for name in project_list]
+        print('RequestItem项目选择器选项:', project_list)
         return project_list
+
     def queryset(self, request, queryset):
         if self.value():
-            print('当前选择:',self.value())
+            print('当前选择:', self.value())
             return queryset.filter(donation_project__project_name__icontains=self.value())
         else:
             return queryset
+
 
 @admin.register(RequestItem)
 class RequestItemItemAdmin(admin.ModelAdmin):
@@ -161,7 +173,7 @@ class RequestItemItemAdmin(admin.ModelAdmin):
         'all_price',
         'donation_project',
     ]
-    list_display_links = ['name','donation_project']
+    list_display_links = ['name', 'donation_project']
     list_filter = [RequestItemProjectsSearcher, ]
     fields = [
         'donation_project',

@@ -50,15 +50,17 @@ class DonationProjectAdmin(admin.ModelAdmin):
     # 内联类名：捐赠项目admin界面将会内联请求物资的admin界面
     inlines = [RequestItemInline]
     # 查询到的数据列表显示的字段
-    list_display = ['project_name', 'Status', 'get_donation_amount', 'donation_amount',
+    list_display = ['id', 'project_name', 'Status', 'get_donation_amount', 'donation_amount',
                     'Speed', 'start_time', 'deadline', ]
     # 可以修改的字段
-    fields = ['project_name', 'project_desc', 'project_status', 'project_news',
+    fields = ['id','project_name', 'project_desc', 'project_status', 'project_news',
               'deadline', 'start_time']
+    # 设置 列表中可点击的字段，若无list_display_links 则默认第一个字段添加a标签可点击
+    list_display_links = ['project_name', ]
     # 只读不能修改的字段
-    readonly_fields = ['start_time']
+    readonly_fields = ['id', 'start_time']
     # 可以通过搜索器搜索的字段
-    search_fields = ("project_name",)
+    search_fields = ("project_name",'id')
     # 自定义搜索菜单栏
     list_filter = [StatusSearcher]
     # def save_related(self, request, form, formsets, change):
@@ -84,11 +86,13 @@ class DonationItemInline(StackedInline):
 # 捐赠记录admin类
 class DonationRecordAdmin(admin.ModelAdmin):
     inlines = [DonationItemInline]
-    list_display = ['donation_user', 'donation_project', 'donation_amount', 'donation_time']
-    readonly_fields = ['donation_amount']
-    fields = ['donation_user', 'donation_project', 'donation_amount']
+    list_display = ['id','donation_user', 'donation_project', 'donation_amount', 'donation_time']
+    # 设置 列表中可点击的字段，若无list_display_links 则默认第一个字段添加a标签可点击
+    list_display_links = ['donation_user', ]
+    readonly_fields = ['id','donation_amount']
+    fields = ['id','donation_user', 'donation_project', 'donation_amount']
     actions = ['delete_selected']
-    search_fields = ("donation_user__username",)
+    search_fields = ("donation_user__username",'donation_project__project_name','id')
 
     # def save_related(self, request, form, formsets, change):
     #     """

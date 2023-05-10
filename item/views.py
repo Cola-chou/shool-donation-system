@@ -5,12 +5,8 @@ from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponseNotAllowed, HttpResponse
-from django.views.decorators.http import require_POST
 from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
-from django.forms import model_to_dict
 from django.utils.datastructures import MultiValueDictKeyError
-from django.views.generic import ListView, DetailView
 
 from .forms import DonationItemForm, DonationItemChangeForm
 from .models import DonationItem, RequestItem
@@ -45,8 +41,6 @@ def donation_item_delete(request, record_id, item_id):
     return redirect('item:record_items_list', record_id)
 
 
-# else:
-#     return HttpResponseNotAllowed(['POST'])
 
 
 @login_required(login_url='account:login')
@@ -67,6 +61,7 @@ def donation_item_create(request, request_id, project_id):
                                 project_id=project_id)
         if form.is_valid():
             # 处理表单提交
+            messages.success(request, '捐赠清单填写成功！')
             return redirect('donation:project_detail', pk=project_id)
     else:
         # get请求
@@ -149,12 +144,3 @@ def donation_item_change(request, item_id, record_id):
     if form.errors:
         context['post_data'] = request.POST
     return render(request, 'donation_item_create.html', context)
-
-
-# class DonationItemListView(ListView):
-#     model = DonationItem
-#     template_name = 'record_items_list.html'
-#     context_object_name = 'items'
-#
-#     def get_queryset(self):
-#         return super().get_queryset()

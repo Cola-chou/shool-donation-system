@@ -2,8 +2,6 @@ from django import forms
 from apps.donation.models import DonationProject, DonationRecord
 from .models import DonationItem, RequestItem, Category
 from django.shortcuts import get_object_or_404
-from django.core.exceptions import ObjectDoesNotExist
-
 from ..user.models import MyUser
 
 
@@ -60,26 +58,18 @@ class DonationItemForm(forms.ModelForm):
                 price=price,
                 item_image=image
             )
-            try:
-                # 若用户在此项目中存在捐赠记录，则更新捐赠记录
-                exist_record,create = DonationRecord.objects.get_or_create(donation_user_id=self.user.id,
-                                                                    donation_project_id=self.project.id)
-                if create:
-                    print(exist_record)
-                    donation_item.donation_record = exist_record
-                    donation_item.save()
-            except ObjectDoesNotExist:
-                # 用户在该项目中无捐赠记录
-                # 创建DonationRecord对象，生成捐赠记录
-                donation_record = DonationRecord(
-                    donation_user=self.user,
-                    donation_project=self.project,
-                )
-                # 将DonationItem对象和DonationRecord对象关联
-                donation_item.donation_record = donation_record
-                # 保存DonationRecord对象和DonationItem对象到数据库中
-                donation_record.save()
-                donation_item.save()
+            # 若用户在此项目中存在捐赠记录，则更新捐赠记录
+            # 否则创建一条新的记录
+            exist_record,create = DonationRecord.objects.get_or_create(donation_user_id=self.user.id,
+                                                                donation_project_id=self.project.id)
+            # 返回的create为真，不存在原纪录，创建新的记录对象
+            # 返回的create为假，存在原纪录
+            print(f'是否新建记录对象：',create)
+            if create:
+                print(exist_record)
+                exist_record.save()
+            donation_item.donation_record = exist_record
+            donation_item.save()
         return cleaned_data
 
     class Meta:

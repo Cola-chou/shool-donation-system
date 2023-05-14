@@ -13,9 +13,12 @@ from ..user.models import MyUser
 
 
 class Category(models.Model):
-    name = models.CharField('物品类型', max_length=200,
+    """
+    目录模型
+    """
+    name = models.CharField('物品种类', max_length=50,
                             db_index=True)
-    slug = models.SlugField('物品slug', max_length=200, unique=True)
+    slug = models.SlugField('物品种类slug', max_length=50, unique=True)
 
     class Meta:
         ordering = ['name']
@@ -64,6 +67,7 @@ class RequestItem(models.Model):
                                    verbose_name='物品照片',
                                    blank=True,
                                    null=True)
+
     def image_tag(self):
         if self.item_image:
             return format_html('<img src="{}" height="50"/>'.format(self.item_image.url))

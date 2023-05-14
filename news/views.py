@@ -1,4 +1,5 @@
 from django.core.paginator import InvalidPage
+from django.db.models import Q
 from django.views.generic import DetailView, ListView
 from .models import News, Announcement
 from apps.donation.models import DonationProject
@@ -13,8 +14,21 @@ class NewsListView(ListView):
     context_object_name = 'news_list'
     # 开启新闻分页，每页3条新闻
     paginate_by = 3
-    # 自定义管理器，只获取发布的新闻
-    queryset = News.published.all()
+
+    extra_context = {'number': None, 'q': None}
+
+    def get_queryset(self):
+        # queryset = super().get_queryset()
+        queryset = News.published.all()
+        query = self.request.GET.get('q')
+        self.extra_context.update(number=queryset.count())
+        self.extra_context.update(q=None)
+        if query:
+            queryset = queryset.filter(Q(title__icontains=query) | Q(body__icontains=query))
+            print(self.extra_context)
+            self.extra_context.update(number=queryset.count(), q=query)
+        print(self.extra_context)
+        return queryset
 
     def paginate_queryset(self, queryset, page_size):
         """重写分页查询集方法"""

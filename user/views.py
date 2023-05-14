@@ -10,7 +10,7 @@ from django.contrib.auth.models import Group
 from django.contrib.auth.views import LoginView, LogoutView
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum, Q
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse_lazy
@@ -237,3 +237,21 @@ class MyUserUpdateView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         form.save()
         return super().form_valid(form)
+
+
+import random
+from django.core.mail import send_mail
+
+def send_verification_code(request):
+    email = request.POST.get('email')
+    if not email:
+        return HttpResponseBadRequest('请输入邮箱')
+    verification_code = str(random.randint(1000, 9999))
+    send_mail(
+        '验证码',
+        f'您的验证码是：{verification_code}',
+        'service@example.com', # 发送方邮件地址
+        [email], # 接收方邮件地址
+        fail_silently=False,
+    )
+    return JsonResponse({'status': 'ok'})

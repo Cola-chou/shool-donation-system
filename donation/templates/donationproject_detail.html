@@ -25,12 +25,30 @@
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         <span style="font-size: large;color: black">{{ object.get_donation_amount }}</span>
                     </p>
+                    <p>
+                        <b class="text-lg" style="font-size: large;">项目进度:</b>
+                        {% if object.project_status == '2' %}
+                            <div class="progress" style="width: 400px;height:25px;background-color: #fefcfc;margin-left: 20px;border: 1px solid">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" aria-valuenow="{{ count }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ count }}%">{{ count }}%</div>
+                            </div>
+                        {% elif object.project_status == '3' %}
+                            <div class="progress" style="width: 400px;height:25px;background-color: #fefcfc;margin-left: 20px;border: 1px solid">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" aria-valuenow="{{ count }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ count }}%">{{ count }}%</div>
+                            </div>
+                        {% else %}
+                            <div class="progress" style="width: 400px;height:25px;background-color: #fefcfc;margin-left: 20px;border: 1px solid">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated " role="progressbar" aria-valuenow="{{ count }}" aria-valuemin="0" aria-valuemax="100" style="width: {{ count }}%">{{ count }}%</div>
+                            </div>
+                        {% endif %}
+                    </p>
                     <p><b class="text-lg" style="font-size: large;">项目状态:</b>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        {% if object.project_status != '3' %}
+                        {% if object.project_status == '2' %}
+                            <span style="font-size: large;color: green">{{ object.get_project_status_display }}</span>
+                        {% elif object.project_status == '3' %}
                             <span style="font-size: large;color: red">{{ object.get_project_status_display }}</span>
                         {% else %}
-                            <span style="font-size: large;color: black">{{ object.get_project_status_display }}</span>
+                            <span style="font-size: large;color: blue">{{ object.get_project_status_display }}</span>
                         {% endif %}
                     </p>
                     <p><b class="text-lg" style="font-size: large;">发起时间:</b>
@@ -67,7 +85,7 @@
                 <div class="col-md-12">
                     <div class="mb-3 d-flex justify-content-between">
                         {% if object.project_status == '1' %}
-                             {% show_request_items object.id True True %}
+                            {% show_request_items object.id True True %}
                         {% else %}
                             {% show_request_items object.id True False %}
                         {% endif %}

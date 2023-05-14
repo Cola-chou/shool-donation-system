@@ -1,12 +1,26 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <section class="section bg-gray" style="margin-bottom: 30px" >
+    <section class="section bg-gray" style="margin-bottom: 30px">
         <div class="container">
             <h2>全部新闻</h2>
+            <div style="margin-bottom: 10px;background-color: #fefefd">
+                <!-- 添加搜索表单 -->
+                <form class="form-inline mb-4" method="get" action="{% url 'news:news_list' %}" style="background-color: #a3a3a3;padding: 5px;">
+                    <input class="form-control mr-sm-2" type="search" name="q" placeholder="输入新闻名或内容进行搜索"
+                           style="border: 1px solid;width: 300px">
+                    <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit" style="color: black">搜索</button>
+                    <br>
+                </form>
+                <p STYLE="padding-left: 10px;">
+                    {% if q %}
+                        关键词:{{ q }} 共搜索到 {{ number }} 条记录
+                    {% endif %}
+                </p>
+            </div>
             {% if news_list %}
                 <hr/>
-                <div class="row gap-y gap-2">
+                <div class="row gap-y gap-2" style="background-color: #fbfafa;margin-top: -60px">
                     {% for new in news_list %}
                         <div class="col-6 col-lg-3">
                             <div class="card shadow-1 hover-shadow-6">

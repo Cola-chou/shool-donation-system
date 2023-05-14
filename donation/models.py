@@ -1,10 +1,12 @@
-from django.core.validators import MinValueValidator
+from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils.html import format_html
 
 from apps.user.models import MyUser
+
+from multiupload.fields import MultiFileField
 
 
 class PublishedProjectManager(models.Manager):
@@ -17,7 +19,7 @@ class DonationProject(models.Model):
         ('0', '编辑'),
         ('1', '发起'),
         ('2', '完成'),
-        ('3', '未完成'),
+        ('3', '截止'),
     ]
     project_name = models.CharField('捐赠项目', max_length=100)
     project_desc = models.CharField('项目介绍', max_length=200)
@@ -81,7 +83,7 @@ class DonationProject(models.Model):
             donation_all_price += item.all_price
         self.get_donation_amount = donation_all_price
         print(f'DonationProject.{self.id}.get_donation_amount =', donation_all_price)
-        if self.donation_amount <= self.get_donation_amount and self.project_status != '3':
+        if self.donation_amount <= self.get_donation_amount and self.project_status != '3' and self.get_donation_amount != 0:
             print('项目筹集完毕 目的金额：{} 实际金额：{} 项目状态：（{}）->（完成）'.format(self.donation_amount, self.get_donation_amount, self.get_project_status_display()))
             self.project_status = '2'
         return super().save(*args, **kwargs)
@@ -89,7 +91,7 @@ class DonationProject(models.Model):
     class Meta:
         verbose_name = '捐赠项目'
         verbose_name_plural = '捐赠项目'
-        ordering = ['-start_time','-deadline']
+        ordering = ['-start_time', '-deadline']
 
     def __str__(self):
         return f'{self.project_name}'
@@ -130,6 +132,7 @@ class DonationRecord(models.Model):
     def __str__(self):
         return f'#{self.pk}_[{self.donation_project}]@{self.donation_user}'
 
+
 # 保存记录对象后自动删除空对象会引发 提交捐赠物品清单的保存错误
 # @receiver(post_save, sender=DonationRecord)
 # def del_empty_record(sender, instance, **kwargs):
@@ -139,3 +142,17 @@ class DonationRecord(models.Model):
 #         print('删除空record')
 #         record = DonationRecord.objects.get(id=instance.id)
 #         record.delete()
+
+
+# class Client(models.Model):
+#     name = models.CharField(verbose_name='委托人姓名', max_length=50)
+#     contact = models.CharField(verbose_name='委托人联系方式', max_length=20)
+#     address = models.CharField(verbose_name='委托人地址', max_length=100)
+#     proofs = MultiFileField(validators=[FileExtensionValidator(['pdf', 'docx', 'jpg'])], label='证明文件')
+#
+#     # Additional fields for organization donors
+#     is_organization = models.BooleanField(verbose_name='是否为慈善机构', default=False)
+#     organization_name = models.CharField(verbose_name='机构名称', max_length=50, blank=True, null=True)
+#
+#     def __str__(self):
+#         return self.name

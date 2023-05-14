@@ -8,6 +8,8 @@ from django.views.generic import ListView, DetailView
 from .models import DonationProject
 from apps.item.models import RequestItem, DonationItem
 from operator import itemgetter
+from django.db.models import Q
+from django.contrib import messages
 
 
 class DonationProjectListView(ListView):
@@ -19,10 +21,10 @@ class DonationProjectListView(ListView):
     # 否则为object
     context_object_name = 'donation_projects'
     # 分页页数设置
-    paginate_by = 2
+    paginate_by = 4
+    extra_context = {'number': None, 'q': None}
     # 自定义查询集：获取所有状态为发起，完成和截止的捐赠项目
     donation_projects = DonationProject.objects.all()
-
     # 使用Case和When表达式对状态和创建时间进行排序
     donation_projects = donation_projects.annotate(
         is_finished=Case(
@@ -32,6 +34,48 @@ class DonationProjectListView(ListView):
         )
     ).order_by('is_finished', '-start_time')
     queryset = donation_projects
+
+    # def get(self, request, *args, **kwargs):
+    #    return super(DonationProjectListView, self).get(request)
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        query = self.request.GET.get('q')
+        self.extra_context.update(number=queryset.count())
+        self.extra_context.update(q=None)
+        print(f'搜索执行前：{self.extra_context}')
+        print(f'打印query:{query}')
+        if query:
+            if '发起' == query:
+                temp = query
+                query = '1'
+                queryset = queryset.filter(Q(project_status__contains=query))
+                query = temp
+            elif '完成' == query:
+                temp = query
+                query = '2'
+                queryset = queryset.filter(Q(project_status__contains=query))
+                query = temp
+            elif '截止' == query:
+                temp = query
+                query = '3'
+                queryset = queryset.filter(Q(project_status__contains=query))
+                query = temp
+            else:
+                print('普通搜索')
+                queryset = queryset.filter(Q(project_name__icontains=query))
+                # query参数会被自动转义以防止注入攻击。在内部，Django ORM会将查询字符串中的特殊字符
+                # （如单引号、双引号等）进行转义，从而使其变成安全的查询条件。
+            self.extra_context.update(number=queryset.count(), q=query)
+        print(f'搜索执行后：{self.extra_context}')
+        print(f' DonationProjectListView.get_queryset '.join(['******'] * 2))
+        return queryset.annotate(
+            is_finished=Case(
+                When(project_status='3', then=1),
+                default=0,
+                output_field=models.IntegerField(),
+            )
+        ).order_by('is_finished', '-start_time')
 
 
 class DonationProjectDetailView(DetailView):
@@ -43,12 +87,12 @@ class DonationProjectDetailView(DetailView):
         context = super().get_context_data(**kwargs)
 
         # 获取本捐赠项目的请求物资对象
-        request_items = RequestItem.objects\
+        request_items = RequestItem.objects \
             .filter(donation_project_id=self.object.id)
         news = self.object.project_news
 
         # 获取该项目所有捐赠物品：暂存，捐赠成功
-        donation_items = DonationItem.objects\
+        donation_items = DonationItem.objects \
             .filter(donation_record__donation_project_id=self.object.id) \
             .filter(Q(status='1') | Q(status='2'))
         # 获取捐赠用户
@@ -88,6 +132,8 @@ class DonationProjectDetailView(DetailView):
             results = paginator.page(paginator.num_pages)
 
             # 将重新组织的结果列表传递给模板
+        count = round(self.object.get_donation_amount / self.object.donation_amount * 100)
+        context['count'] = count
         context['news'] = news
         context['request_items'] = request_items
         context['results'] = results
@@ -102,7 +148,6 @@ cron：以crontab的方式运行定时任务
 minutes：设置以分钟为单位的定时器
 seconds：设置以秒为单位的定时器
 '''
-
 
 
 def check_expired_projects():

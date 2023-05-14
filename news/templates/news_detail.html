@@ -8,7 +8,7 @@
             <div style="padding-left: 10px">
                 发布时间{{ new.modified_time|date:'Y年m月d日 H:i:s' }}
             </div>
-            <img src="{{ new.image.url }}" alt="">
+            <img src="{{ new.image.url }}" alt="" style="width: 100%">
             <p style="font-size: large;padding: 20px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ new.body }}</p>
             {% if projects %}
                 <div class="col-md-12">

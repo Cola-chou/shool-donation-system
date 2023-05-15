@@ -1,9 +1,10 @@
 from django import template
 from django.db.models import Q
 
-from ..models import DonationItem, RequestItem
+from ..models import DonationItem, RequestItem, Require
 from ...donation.models import DonationProject
 from django.template.defaultfilters import stringfilter
+import collections
 
 register = template.Library()
 
@@ -19,9 +20,30 @@ def show_record_items(context, record_id):
 
 @register.inclusion_tag('item/inclusions/_request_items.html', takes_context=True)
 def show_request_items(context, project_id, is_project_detail, is_published=False):
+    # 获取请求物品集
     items = RequestItem.objects.filter(donation_project_id=project_id)
+    # 装载 items_dict
+    items_dict = {}
+    for item in items:
+        item_requirements_dict = {}
+        item_requirements = Require.objects.filter(request_item=item.id)
+        # 必须要判断物品是否存在图片对象
+        if item.item_image:
+            url = item.item_image.url
+        else:
+            url = ''
+        for requirement in item_requirements:
+            item_requirements_dict[requirement.name] = requirement.information
+        item_dict = {
+            'name': item.name,
+            'detail': item.detail,
+            'quantity': item.quantity,
+            'url': url,
+            'requirements': item_requirements_dict
+        }
+        items_dict[item.id] = item_dict
     return {
-        'items': items,
+        'items_dict': items_dict,
         'project_id': project_id,
         'is_project_detail': is_project_detail,  # 此标签适用于新闻详情页和项目详情页，只在项目详情页显示捐赠按钮
         'is_published': is_published,  # 项目是否处于发布状态,截止状态不显示捐赠按钮

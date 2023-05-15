@@ -41,12 +41,10 @@ def donation_item_delete(request, record_id, item_id):
     return redirect('item:record_items_list', record_id)
 
 
-
-
 @login_required(login_url='account:login')
 def donation_item_create(request, request_id, project_id):
     # lambda函数：物品名称预填充
-    has_rmb = lambda text: '人民币' if '人民币' in text else f'xx{text},xx型号'
+    # has_rmb = lambda text: '人民币' if '人民币' in text else f'xx{text},xx型号'
     # 请求物资对象
     request_item = get_object_or_404(RequestItem,
                                      id=request_id)
@@ -64,11 +62,12 @@ def donation_item_create(request, request_id, project_id):
             messages.success(request, '捐赠清单填写成功！')
             return redirect('donation:project_detail', pk=project_id)
     else:
+        # text = has_rmb(request_item.category.name)
         # get请求
         initial = {
             'price': request_item.price,
-            'name': has_rmb(request_item.category.name),
-            'detail': has_rmb(request_item.category.name)
+            'name': request_item.name,
+            'detail': f'[{request.user.username}]捐赠：[{request_item.name}]',
         }
         form = DonationItemForm(initial=initial,
                                 request_id=request_id,
@@ -121,6 +120,7 @@ def donation_item_change(request, item_id, record_id):
                 'item_image': form.cleaned_data['item_image'],
                 'donation_record': donation_item.donation_record,
                 'all_price': form.cleaned_data['quantity'] * donation_item.price,
+                'love_message': form.cleaned_data['love_message']
             }
             # 更新DonationItem对象
             DonationItem.objects.filter(id=item_id).update(**data)

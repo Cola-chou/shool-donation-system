@@ -138,7 +138,7 @@ class DonationProjectDetailView(DetailView):
         count = round(self.object.get_donation_amount / self.object.donation_amount * 100)
         context['count'] = count
         context['news'] = news
-        context['request_items'] = request_items
+        # context['request_items'] = request_items
         context['results'] = results
         context['paginator'] = paginator
         return context
@@ -168,4 +168,3 @@ def check_expired_projects():
             print(project.project_status)
             project.project_status = '3'
             project.save()
-

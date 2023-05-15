@@ -144,9 +144,16 @@ class DonationProjectAdmin(admin.ModelAdmin):
 # 内联的捐赠物资操控面板
 class DonationItemInline(StackedInline):
     model = DonationItem
-    min_num = 0
+    min_num = 1
     extra = 0
-    readonly_fields = ['all_price']
+    fields = [
+        'donation_project',
+        'category',
+        'name',
+        'detail',
+        'price',
+        'quantity',
+        'item_image']
 
 
 @admin.register(DonationRecord)  # 在admin中注册捐赠记录admin

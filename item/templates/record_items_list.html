@@ -66,10 +66,14 @@
                                     <b class="text-lg" style="font-size: large">物品价值：</b>
                                     <a class="text-dark" style="font-size: medium" href="#">{{ item.all_price }}</a>
                                 </p>
-                                {#                <div class="card-text text-muted small">#}
-                                {#                    Jake Bittle in SCIENCE#}
-                                {#                </div>#}
-                                {#                <small class="text-muted">Dec 12 &middot; 5 min read</small>#}
+                                <p>
+                                    <b class="text-lg" style="font-size: large">爱心寄语：</b>
+                                    {% if item.love_message %}
+                                        <a class="text-dark" style="font-size: medium" href="#">{{ item.love_message }}</a>
+                                    {% else %}
+                                        <a class="text-dark" style="font-size: medium" href="#">未填写</a>
+                                    {% endif %}
+                                </p>
                                 {% if item.status == '0' %}
                                     <p>
                                         <a href="{% url "item:donation_item_change" record_id item.id %}" class="btn btn-sm btn-outline-info">修改</a>
@@ -112,6 +116,14 @@
                                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                                     <b class="text-lg" style="font-size: large">物品价值：</b>
                                     <a class="text-dark" style="font-size: medium" href="#">{{ item.all_price }}</a>
+                                </p>
+                                <p>
+                                    <b class="text-lg" style="font-size: large">爱心寄语：</b>
+                                    {% if item.love_message %}
+                                        <a class="text-dark" style="font-size: medium" href="#">{{ item.love_message }}</a>
+                                    {% else %}
+                                        <a class="text-dark" style="font-size: medium" href="#">未填写</a>
+                                    {% endif %}
                                 </p>
                                 {% if item.status == '0' %}
                                     <p>

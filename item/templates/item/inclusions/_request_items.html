@@ -1,10 +1,10 @@
 {% load static %}
 <div class="row gap-x-3 justify-content-center" style="margin-bottom: 20px;">
-    {% for item in items %}
+    {% for id,item in items_dict.items %}
         <div class="col-lg row" style="">
             <div class="card shadow-1 hover-shadow-6" style="width: 200px;border: 1px solid;margin-bottom: 20px">
-                {% if item.item_image %}
-                    <img src="{{ item.item_image.url }}" alt="{{ item.name }}" class="card-img-top news-image"/>
+                {% if item.url %}
+                    <img src="{{ item.url }}" alt="{{ item.name }}" class="card-img-top news-image"/>
                 {% else %}
                     <img src="{% static "img/no_image.png" %}" alt="{{ item.name }}" class="card-img-top news-image"/>
                 {% endif %}
@@ -17,11 +17,22 @@
                         需求量:
                         <br>
                         &nbsp&nbsp&nbsp&nbsp{{ item.quantity }}
+                        <br>
+                        {% if item.requirements %}
+                            要求:
+                            <ul>
+                                {% for requirement_name, requirement_info in item.requirements.items %}
+                                    <li>{{ requirement_name }}: {{ requirement_info }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+
+                        &nbsp&nbsp&nbsp&nbsp{{ item.requirements.name }}
                     </h6>
                     {% if is_project_detail %}
                         {% if is_published %}
                             <p>
-                                <a href="{% url "item:donation_item_create" project_id item.id %}" class="btn btn-sm btn-danger">捐赠</a>
+                                <a href="{% url "item:donation_item_create" project_id id %}" class="btn btn-sm btn-danger">捐赠</a>
                             </p>
                         {% endif %}
                     {% endif %}

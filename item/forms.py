@@ -23,60 +23,63 @@ class DonationItemForm(forms.ModelForm):
 
     def clean(self):
         # 验证失败标志
-        valid_flag = True
+        # valid_flag = True
         # lambda函数：物品名称预填充
-        has_rmb = lambda text: '人民币' if '人民币' in text else f'xx{text},xx型号'
+        # has_rmb = lambda text: '人民币' if '人民币' in text else f'xx{text},xx型号'
         # 原有的表单验证
         cleaned_data = super(DonationItemForm, self).clean()
         # 获取表单的name,deatail字段
-        name = cleaned_data.get('name')
-        detail = cleaned_data.get('detail')
         # 验证name和detail字段是否修改预填充文字
-        if self.cleaned_data['name'] == has_rmb(self.request_item.category.name) \
-                and self.request_item.category.name != '人民币':
-            self.add_error('name', f'请将xx替换为自己的物品')
-            valid_flag = False
-        if self.cleaned_data['detail'] == has_rmb(self.request_item.category.name) \
-                and self.request_item.category.name != '人民币':
-            self.add_error('detail', f'请将xx替换为自己的描述')
-            valid_flag = False
-        if valid_flag:
-            print('验证成功')
-            # 验证成功
-            # 获取物品类别
-            category = get_object_or_404(Category,
-                                         id=self.request_item.category.id)
-            price = self.request_item.price
-            quantity = self.cleaned_data['quantity']
-            image = self.cleaned_data['item_image']
-            # 创建DonationItem对象
-            donation_item = DonationItem(
-                name=name,
-                detail=detail,
-                quantity=quantity,
-                category=category,
-                price=price,
-                item_image=image
-            )
-            # 若用户在此项目中存在捐赠记录，则更新捐赠记录
-            # 否则创建一条新的记录
-            exist_record,create = DonationRecord.objects.get_or_create(donation_user_id=self.user.id,
-                                                                donation_project_id=self.project.id)
-            # 返回的create为真，不存在原纪录，创建新的记录对象
-            # 返回的create为假，存在原纪录
-            print(f'是否新建记录对象：',create)
-            if create:
-                print(exist_record)
-                exist_record.save()
-            donation_item.donation_record = exist_record
-            donation_item.save()
+        # if self.cleaned_data['name'] == has_rmb(self.request_item.category.name) \
+        #         and self.request_item.category.name != '人民币':
+        #     self.add_error('name', f'请将xx替换为自己的物品')
+        #     valid_flag = False
+        # if self.cleaned_data['detail'] == has_rmb(self.request_item.category.name) \
+        #         and self.request_item.category.name != '人民币':
+        #     self.add_error('detail', f'请将xx替换为自己的描述')
+        #     valid_flag = False
+        # print('验证成功')
+        # 验证成功
+        # 获取物品类别
+        name = cleaned_data.get('name')
+        quantity = self.cleaned_data['quantity']
+        detail = cleaned_data.get('detail')
+        category = get_object_or_404(Category,
+                                     id=self.request_item.category.id)
+        price = self.request_item.price
+        image = self.cleaned_data['item_image']
+        love_message = self.cleaned_data['love_message']
+        # 创建DonationItem对象
+        donation_item = DonationItem(
+            name=name,
+            detail=detail,
+            quantity=quantity,
+            category=category,
+            price=price,
+            item_image=image,
+            love_message=love_message
+        )
+        # 若用户在此项目中存在捐赠记录，则更新捐赠记录
+        # 否则创建一条新的记录
+        exist_record, create = DonationRecord.objects.get_or_create(donation_user_id=self.user.id,
+                                                                    donation_project_id=self.project.id)
+        # 返回的create为真，不存在原纪录，创建新的记录对象
+        # 返回的create为假，存在原纪录
+        print(f'是否新建记录对象：', create)
+        if create:
+            print(exist_record)
+            exist_record.save()
+        donation_item.donation_record = exist_record
+        donation_item.save()
         return cleaned_data
 
     class Meta:
         model = DonationItem
-        fields = ['name', 'detail', 'quantity', 'item_image']
+        fields = ['name', 'detail', 'quantity', 'love_message', 'item_image']
         widgets = {
+            'detail': forms.Textarea(attrs={'style': 'width: 400px; height: 100px'}),
             'price': forms.HiddenInput(attrs={'value': RequestItem.price}),  # 模板该字段渲染时隐藏
+            'storage_location': forms.HiddenInput(attrs={'value': ''}),  # 模板该字段渲染时隐藏
             'quantity': forms.NumberInput(attrs={'min': 1}),  # 模板渲染该字段为数字类型
         }
 
@@ -150,8 +153,9 @@ class DonationItemChangeForm(forms.ModelForm):
 
     class Meta:
         model = DonationItem
-        fields = ['name', 'detail', 'quantity', 'item_image']
+        fields = ['name', 'detail', 'quantity', 'love_message', 'item_image']
         widgets = {
             'price': forms.HiddenInput(attrs={'value': DonationItem.price}),
+            'storage_location': forms.HiddenInput(attrs={'value': ''}),  # 模板该字段渲染时隐藏
             'quantity': forms.NumberInput(attrs={'min': 1}),
         }

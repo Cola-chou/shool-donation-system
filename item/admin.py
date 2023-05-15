@@ -1,9 +1,9 @@
 from django.contrib import admin
+from django.contrib.admin import StackedInline
 
 from django.core.exceptions import ObjectDoesNotExist
-from django.utils.html import format_html
 
-from apps.item.models import DonationItem, RequestItem, Category
+from apps.item.models import DonationItem, RequestItem, Category, Require
 from django.db.models import Sum
 from apps.donation.models import DonationProject
 
@@ -45,27 +45,35 @@ class DonationItemAdmin(admin.ModelAdmin):
         'donation_record',
         'Status',
         'image_tag',
+        'storage_location'
     ]
     # 设置 列表中可点击的字段，若无list_display_links 则默认第一个字段添加a标签可点击
     list_display_links = ['name', 'donation_record', ]
     fields = [
         'id',
         'donation_record',
+        'love_message',
+        'storage_location',
         'category',
         'status',
         'name',
         'detail',
         'price',
         'quantity',
-        'item_image']
+        'item_image'
+    ]
     readonly_fields = ['id']
 
     # 可搜索字段，可通过'__'搜索外键字段
-    search_fields = ['name',
-                     'detail',
-                     'category__name',
-                     'donation_record__donation_user__username',
-                     'donation_record__donation_project__project_name', 'id']
+    search_fields = [
+        'name',
+        'detail',
+        'category__name',
+        'donation_record__donation_user__username',
+        'donation_record__donation_project__project_name',
+        'id',
+        'storage_location'
+    ]
     actions = ['make_donation_success']
     list_filter = [StatusSearcher, ]
 
@@ -160,6 +168,14 @@ class RequestItemProjectsSearcher(StatusSearcher):
             return queryset
 
 
+# # 内联的捐赠物资操控面板
+class RequireInline(StackedInline):
+    model = Require
+    min_num = 1
+    extra = 0
+    fields = ['name', 'information']
+
+
 @admin.register(RequestItem)
 class RequestItemItemAdmin(admin.ModelAdmin):
     actions = ['delete_selected']
@@ -173,6 +189,7 @@ class RequestItemItemAdmin(admin.ModelAdmin):
         'all_price',
         'donation_project',
     ]
+    inlines = [RequireInline]
     list_display_links = ['name', 'donation_project']
     list_filter = [RequestItemProjectsSearcher, ]
     fields = [
@@ -182,7 +199,8 @@ class RequestItemItemAdmin(admin.ModelAdmin):
         'detail',
         'price',
         'quantity',
-        'item_image']
+        'item_image'
+    ]
 
     def get_changeform_initial_data(self, request):
         # admin创建物品对象页面自动填充指定字段
@@ -240,3 +258,12 @@ class RequestItemItemAdmin(admin.ModelAdmin):
             print('item\\admin\\delete_selected()错误!!!')
 
     delete_selected.short_description = '删除所选的请求物资'
+
+
+@admin.register(Require)
+class RequireAdmin(admin.ModelAdmin):
+    list_display = ('request_item', 'name', 'information')
+    # list_filter = ('request_item',)
+    # fields = ['name', 'information']
+    # readonly_fields = ['request_item']
+    # search_fields = ('name', 'information')

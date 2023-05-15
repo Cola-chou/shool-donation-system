@@ -80,7 +80,7 @@ class RequestItem(models.Model):
     #     print('save')
     #     from django.db.models import Sum
     #     # 保存捐赠物品时，自动更新物品价值
-    #     self.all_price = self.price * self.quantity
+    #     self.all_price = self.price * self.quantityF
     #     # 更新捐赠项目中的目的捐赠价值donation_amount
     #     self.donation_project.donation_amount = self.donation_project \
     #                                                 .request_items \
@@ -143,6 +143,24 @@ def request_item_delete(sender, instance, **kwargs):
                                   .aggregate(Sum('all_price'))['all_price__sum'] or 0
     print(project.donation_amount)
     project.save()
+
+
+class Require(models.Model):
+    name = models.CharField('要求名称', max_length=20)
+    information = models.TextField('要求信息', max_length=500)
+    request_item = models.ForeignKey(RequestItem,
+                                     verbose_name='请求的物品',
+                                     related_name='requirements',
+                                     on_delete=models.SET_NULL,
+                                     null=True,
+                                     blank=True)
+
+    class Meta:
+        verbose_name = '物资要求'
+        verbose_name_plural = '物资要求'
+
+    def __str__(self):
+        return f"{self.request_item.name} - {self.information}"
 
 
 class PublishedItemsManager(models.Manager):

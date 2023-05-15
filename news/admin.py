@@ -5,6 +5,9 @@ from django.utils.safestring import mark_safe
 from .models import News, Announcement
 
 # 状态选择搜索器
+from ..donation.models import Client
+
+
 class StatusSearcher(admin.SimpleListFilter):
     '''新闻状态选择器'''
     title = '状态'
@@ -93,3 +96,5 @@ class AnnouncementAdmin(admin.ModelAdmin):
         self.message_user(request, "成功将 %s 条公告转为草稿" % rows_updated)
 
     make_draft.short_description = "停止发布已选择的公告"
+
+

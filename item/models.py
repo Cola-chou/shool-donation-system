@@ -196,6 +196,9 @@ class DonationItem(models.Model):
                                                     (0.01, message="价值必须大于0.01")])
     item_image = models.ImageField(upload_to=itemImage_directory_path, verbose_name='物品照片', blank=True, null=True)
 
+    love_message = models.CharField('爱心寄语', max_length=100, blank=True, null=True)
+    storage_location = models.CharField('存储位置', max_length=50, blank=True, null=True)
+
     objects = models.Manager()
     published = PublishedItemsManager()
 

@@ -2,11 +2,49 @@ from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.urls import reverse
 from django.utils.html import format_html
 
 from apps.user.models import MyUser
 
-from multiupload.fields import MultiFileField
+
+
+class Client(models.Model):
+    name = models.CharField(verbose_name='委托人姓名', max_length=50)
+    contact = models.CharField(verbose_name='委托人联系方式', max_length=20)
+    address = models.CharField(verbose_name='委托人地址', max_length=100)
+    proof = models.FileField(verbose_name='证明文件',
+                             upload_to='donor_proofs',
+                             validators=[FileExtensionValidator(['pdf'])])
+
+    # Additional fields for organization donors
+    is_organization = models.BooleanField(verbose_name='是否为慈善机构', default=False)
+    organization_name = models.CharField(verbose_name='机构名称', max_length=50, blank=True, null=True)
+
+    def view_pdf_out(self):
+        if self.proof:
+            # print(self.proof.url)
+            return format_html(f'<a href="{self.proof.url}" target="_blank" >查看证明</a>')
+        else:
+            return '请上传文件'
+
+    view_pdf_out.allow_tags = True
+    view_pdf_out.short_description = '证明预览'
+
+    def view_pdf_in(self):
+        if self.proof:
+            return format_html('<embed src="{}#view=FitH" width="100%" height="800px" />', self.proof.url)
+        else:
+            return '等待文件上传后预览'
+    view_pdf_in.short_description = '证明预览'
+
+    class Meta:
+        verbose_name = '委托人'
+        verbose_name_plural = '委托人'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 
 class PublishedProjectManager(models.Manager):
@@ -44,7 +82,12 @@ class DonationProject(models.Model):
                                           default=0.01,
                                           blank=True,
                                           validators=[MinValueValidator(0.01, message="价值必须大于0.01")])
-
+    project_client = models.ForeignKey(Client,
+                                       verbose_name='项目委托人',
+                                       related_name='project',
+                                       on_delete=models.SET_NULL,
+                                       blank=True,
+                                       null=True)
     objects = models.Manager()  # 默认管理器
     published = PublishedProjectManager()  # 自定义管理器
 
@@ -54,6 +97,15 @@ class DonationProject(models.Model):
         return format_html('<progress max="100" value="{}"></progress> {}%', count, count)
 
     Speed.short_description = "当前进度"
+
+    def project_client_link(self):
+        if self.project_client:
+            url = reverse('admin:donation_client_change', args=[self.project_client.id])
+            return format_html('<a href="{}">{}</a>', url, self.project_client)
+        else:
+            return '-'
+
+    project_client_link.short_description = "项目委托人"  # 更改列标题名称
 
     # 自定义admin状态显示方法
     def Status(self):
@@ -132,7 +184,6 @@ class DonationRecord(models.Model):
     def __str__(self):
         return f'#{self.pk}_[{self.donation_project}]@{self.donation_user}'
 
-
 # 保存记录对象后自动删除空对象会引发 提交捐赠物品清单的保存错误
 # @receiver(post_save, sender=DonationRecord)
 # def del_empty_record(sender, instance, **kwargs):
@@ -142,17 +193,3 @@ class DonationRecord(models.Model):
 #         print('删除空record')
 #         record = DonationRecord.objects.get(id=instance.id)
 #         record.delete()
-
-
-# class Client(models.Model):
-#     name = models.CharField(verbose_name='委托人姓名', max_length=50)
-#     contact = models.CharField(verbose_name='委托人联系方式', max_length=20)
-#     address = models.CharField(verbose_name='委托人地址', max_length=100)
-#     proofs = MultiFileField(validators=[FileExtensionValidator(['pdf', 'docx', 'jpg'])], label='证明文件')
-#
-#     # Additional fields for organization donors
-#     is_organization = models.BooleanField(verbose_name='是否为慈善机构', default=False)
-#     organization_name = models.CharField(verbose_name='机构名称', max_length=50, blank=True, null=True)
-#
-#     def __str__(self):
-#         return self.name

@@ -1,8 +1,11 @@
 from datetime import datetime
 import logging
+
+from django.conf import settings
 from django.core.paginator import PageNotAnInteger, Paginator, EmptyPage
 from django.db import models
 from django.db.models import Q, Case, When
+from django.http import HttpResponse
 from django.utils import timezone
 from django.views.generic import ListView, DetailView
 from .models import DonationProject
@@ -165,3 +168,4 @@ def check_expired_projects():
             print(project.project_status)
             project.project_status = '3'
             project.save()
+

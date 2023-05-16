@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load system_extras %}
+{% load markdownx %}
 {% block content %}
     <section class="section bg-gray" style="padding-bottom: 0;">
         <div class="container">
@@ -10,6 +11,9 @@
             </div>
             <img src="{{ new.image.url }}" alt="" style="width: 100%">
             <p style="font-size: large;padding: 20px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ new.body }}</p>
+            <div id="content" style="font-size: large;padding: 20px">
+                {{ new.markdown_body|custom_markdown }}  <!-- 使用 markdownx 过滤器 -->
+            </div>
             {% if projects %}
                 <div class="col-md-12">
                     <h5 class="font-weight-bold spanborder"><span>相关捐赠项目</span></h5>
@@ -38,7 +42,7 @@
                                         <b class="text-lg " style="font-size: large">项目筹得金额：</b>
                                         <a class="text-dark" style="font-size: medium" href="#">{{ project.get_donation_amount }}元</a>
                                     </p>
-{#                                is_project_detail = False 捐赠按钮显示关闭#}
+                                    {#                                is_project_detail = False 捐赠按钮显示关闭#}
                                     {% show_request_items project.id False %}
                                     {% if project.project_status != '3' and project.project_status != '2' %}
                                         <p>

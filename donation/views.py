@@ -46,8 +46,8 @@ class DonationProjectListView(ListView):
         query = self.request.GET.get('q')
         self.extra_context.update(number=queryset.count())
         self.extra_context.update(q=None)
-        print(f'搜索执行前：{self.extra_context}')
-        print(f'打印query:{query}')
+        # print(f'搜索执行前：{self.extra_context}')
+        # print(f'打印query:{query}')
         if query:
             if '发起' == query:
                 temp = query
@@ -70,8 +70,8 @@ class DonationProjectListView(ListView):
                 # query参数会被自动转义以防止注入攻击。在内部，Django ORM会将查询字符串中的特殊字符
                 # （如单引号、双引号等）进行转义，从而使其变成安全的查询条件。
             self.extra_context.update(number=queryset.count(), q=query)
-        print(f'搜索执行后：{self.extra_context}')
-        print(f' DonationProjectListView.get_queryset '.join(['******'] * 2))
+        # print(f'搜索执行后：{self.extra_context}')
+        # print(f' DonationProjectListView.get_queryset '.join(['******'] * 2))
         return queryset.annotate(
             is_finished=Case(
                 When(project_status='3', then=1),

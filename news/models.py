@@ -8,6 +8,7 @@ from django.utils.html import format_html
 
 from apps.donation.models import DonationProject
 from apps.user.models import MyUser
+from markdownx.models import MarkdownxField
 
 
 class PublishedManageer(models.Manager):
@@ -36,10 +37,11 @@ class News(models.Model):
     ]
     title = models.CharField('标题', max_length=50)
     status = models.CharField('状态', choices=status_choice, max_length=5)
-    body = models.TextField('正文')
+    body = models.TextField('正文', blank=True, null=True)
+    markdown_body = MarkdownxField(verbose_name='markdown正文', blank=True, null=True)
     created_time = models.DateTimeField('创建时间',
                                         auto_now_add=True)
-    image = models.ImageField('新闻图片',
+    image = models.ImageField('新闻封面',
                               upload_to=newsImage_directory_path)
     modified_time = models.DateTimeField('修改时间')
 

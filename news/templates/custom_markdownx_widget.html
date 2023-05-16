@@ -1,0 +1,19 @@
+网页格式
+{% load static %}
+
+<div class="md-form">
+    <textarea id="{{ widget.attrs.id }}" name="{{ widget.attrs.name }}" rows="10" cols="40"
+              data-markdown-preview-url="{% url 'markdownx_preview' %}"
+              class="md-textarea form-control" {% include "django/forms/widgets/attrs.html" %}>{{ widget.value }}</textarea>
+</div>
+
+<div class="image-upload-container">
+    <input type="file" name="file" id="image-upload-input" accept="image/*">
+    <button id="image-upload-button">Upload Image</button>
+</div>
+
+<script type="text/javascript" src="{% static 'js/custom_markdownx_widget.js' %}"></script>
+<div class="image-upload-container">
+    <input type="file" name="file" id="image-upload-input" accept="image/*">
+    <button id="image-upload-button">Upload Image</button>
+</div>

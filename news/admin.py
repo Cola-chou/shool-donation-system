@@ -1,11 +1,10 @@
+from django.conf import settings
 from django.contrib import admin
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from .models import News, Announcement
 
-# 状态选择搜索器
-from ..donation.models import Client
 
 
 class StatusSearcher(admin.SimpleListFilter):
@@ -28,6 +27,7 @@ class StatusSearcher(admin.SimpleListFilter):
 
 class AnnounceStatusSearcher(StatusSearcher):
     '''公告状态选择器'''
+
     def lookups(self, request, model_admin):
         return [
             ('draft', '草稿'),
@@ -35,15 +35,43 @@ class AnnounceStatusSearcher(StatusSearcher):
         ]
 
 
+from django.contrib import admin
+from django import forms
+from markdownx.widgets import MarkdownxWidget
+from .models import News
+
+
+class NewsAdminForm(forms.ModelForm):
+    markdown_body = forms.CharField(widget=MarkdownxWidget())
+
+    class Media:
+        js = (
+            '//cdn.jsdelivr.net/npm/marked/marked.min.js',
+            '//cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js',
+            '//cdn.jsdelivr.net/npm/tui-editor/dist/tui-editor.min.js',
+            '//cdn.jsdelivr.net/npm/tui-editor/dist/tui-editor-extScrollSync.min.js',
+            settings.STATIC_URL + 'markdownx/js/markdownx.js',  # 添加此行
+        )
+        css = {
+            'all': (
+                '//cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css',
+                '//cdn.jsdelivr.net/npm/tui-editor/dist/tui-editor.min.css',
+                '//cdn.jsdelivr.net/npm/tui-editor/dist/tui-editor-contents.min.css',
+                settings.STATIC_URL + 'markdownx/css/markdownx.css',  # 添加此行
+            )
+        }
+
+
 # admin类
 @admin.register(News)
 class NewsAdmin(admin.ModelAdmin):
     list_display = ['title', 'Status', 'image_tag']
     readonly_fields = ['created_time', 'image_tag']
-    fields = ['title', 'status', 'body', 'image', 'created_time', 'modified_time']
+    # fields = ['title', 'status', 'body','content', 'image', 'created_time', 'modified_time']
     actions = ['make_published', 'make_draft']
     list_filter = [StatusSearcher]
-    search_fields = ['title','']
+    search_fields = ['title', '']
+    form = NewsAdminForm
 
     def image_tag(self, obj):
         return format_html('<img src="{}" height="50"/>'.format(obj.image.url))
@@ -79,7 +107,7 @@ class AnnouncementAdmin(admin.ModelAdmin):
     list_display = ['title', 'status', 'created_time', 'author']
     fields = ['title', 'status', 'content', 'author']
     actions = ['make_published', 'make_draft']
-    search_fields = ['title','author__username']
+    search_fields = ['title', 'author__username']
     list_filter = [AnnounceStatusSearcher]
 
     # 自定义action
@@ -96,5 +124,3 @@ class AnnouncementAdmin(admin.ModelAdmin):
         self.message_user(request, "成功将 %s 条公告转为草稿" % rows_updated)
 
     make_draft.short_description = "停止发布已选择的公告"
-
-

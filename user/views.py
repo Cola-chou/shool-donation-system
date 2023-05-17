@@ -2,6 +2,7 @@ import os
 from operator import itemgetter
 from random import randint
 
+import pdfkit
 import weasyprint
 from django.contrib import messages
 from django.contrib.auth import get_user_model
@@ -12,8 +13,9 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.db.models import Sum, Q
 from django.http import HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.shortcuts import render, redirect
-from django.template.loader import render_to_string
+from django.template.loader import render_to_string, get_template
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_encode
 from django.views.generic.edit import CreateView, UpdateView
@@ -35,6 +37,7 @@ User = get_user_model()
 def index(request):
     return render(request, 'user/index.html')
 
+
 def url_fetcher(url):
     if url.startswith(settings.MEDIA_URL):
         path = os.path.join(settings.MEDIA_ROOT, url.replace(settings.MEDIA_URL, ''))
@@ -43,76 +46,48 @@ def url_fetcher(url):
     else:
         return weasyprint.default_url_fetcher(url)
 
+
 from io import BytesIO
-from reportlab.pdfgen import canvas
-from reportlab.lib.units import inch
-from reportlab.lib.pagesizes import letter
+
 from PyPDF2 import PdfFileWriter, PdfReader
 from io import BytesIO
 from PIL import Image
 from pdf2image import convert_from_bytes
-
-# def create_pdf(request, self=None):
-#     # 获取用户所有的通过审核的捐赠物品
-#     items = DonationItem.published.filter(donation_record__donation_user_id=request.user.id)
-#     if items:
-#         # 获得该用户参与的所有的捐赠项目
-#         projects = DonationProject.objects.filter(donation_records__donation_user_id=request.user.id)
-#         # 获取用户捐赠的所有通过审核物品的总金额
-#         total_amount = DonationItem.published.filter(donation_record__donation_user_id=request.user.id).aggregate(Sum('all_price'))['all_price__sum'] or 0
-#         # 生成pdf页面
-#         buffer = BytesIO()
-#         c = canvas.Canvas(buffer, pagesize=letter)
-#         c.drawString(2 * inch, 10.5 * inch, "捐赠证书")
-#         c.drawString(2 * inch, 10 * inch, "账号：{}".format(request.user.username))
-#         # c.drawString(2 * inch, 9.5 * inch, "学号：{}".format(request.user.student_number))
-#         # 添加用户头像到pdf
-#         if request.user.avatar:
-#             img_temp = BytesIO(request.user.avatar.read())
-#             images = convert_from_bytes(img_temp.read())
-#             img = images[0]
-#             img_temp.close()
-#             w, h = img.size
-#             c.drawImage(Image.open(BytesIO(img.tobytes())), 0, 8.5 * inch, w / 4, h / 4)
-#         else:
-#             c.drawString(2 * inch, 9 * inch, "头像：无")
-#         c.drawString(2 * inch, 8.5 * inch, "捐赠总金额：{}元".format(total_amount))
-#         c.drawString(2 * inch, 8 * inch, "参与的项目：")
-#         for idx, project in enumerate(projects):
-#             c.drawString(2.5 * inch, (7.5 - idx * 0.3) * inch, "- {}".format(project.title))
-#         c.drawString(2 * inch, 6.5 * inch, "捐赠物品：")
-#         for idx, item in enumerate(items):
-#             c.drawString(2.5 * inch, (6 - idx * 0.3) * inch, "- {} x{}".format(item.name, item.quantity))
-#         c.showPage()
-#         c.save()
-#
-#         buffer.seek(0)
-#         new_pdf = PdfReader(buffer)
-#         output_pdf = PdfFileWriter()
-#         for page in new_pdf.pages:
-#             output_pdf.addPage(page)
-#         response = HttpResponse(content_type='application/pdf')
-#         response['Content-Disposition'] = 'filename={}的捐赠证书.pdf'.format(request.user.username)
-#         output_pdf.write(response)
-#         return response
-#     else:
-#         messages.success(request, '未查询到您的捐赠记录！')
-#         return redirect('account:profile')
+from io import BytesIO
+from django.http import HttpResponse
 
 
 def create_pdf(request, self=None):
     # 获取用户所有的通过审核的捐赠物品
     items = DonationItem.published.filter(donation_record__donation_user_id=request.user.id)
+
     if items:
         # 获得该用户参与的所有的捐赠项目
         projects = DonationProject.objects.filter(donation_records__donation_user_id=request.user.id)
+
         # 获取用户捐赠的所有通过审核物品的总金额
         total_amount = DonationItem.published.filter(donation_record__donation_user_id=request.user.id).aggregate(Sum('all_price'))['all_price__sum'] or 0
+
+        result = {}  # 存储项目名称及其对应的捐赠物品列表
+        for project in projects:
+            donation_items = items.filter(donation_record__donation_project=project)
+            if donation_items:
+                project_total_amount = donation_items.aggregate(Sum('all_price'))['all_price__sum'] or 0
+                result[project.project_name] = {
+                    'donation_items': donation_items,
+                    'total_amount': project_total_amount
+                }
+
+        # print(result)
+        # return render(request, 'E:\\DJANGO\\universityDonationSystem\\mysystem\\apps\\user\\templates\\user\\pdf.html', locals())
+
+        # return HttpResponse('ok')
         # 生成pdf页面
         html = render_to_string('user/pdf.html',
                                 {
-                                    'projects': projects,
-                                    'items': items,
+                                    # 'projects': projects,
+                                    # 'items': items,
+                                    'result': result,
                                     'total_amount': total_amount,
                                     'user': request.user,
                                     # 'time': timezone.now()
@@ -121,8 +96,8 @@ def create_pdf(request, self=None):
         response['Content-Disposition'] = 'filename={}的捐赠证书.pdf'.format(request.user.username)
         weasyprint.HTML(string=html).write_pdf(response,
                                                stylesheets=[
-                                               #     # weasyprint.CSS('..css/pdf.css')
-                                               ],)
+                                                   #     # weasyprint.CSS('..css/pdf.css')
+                                               ], )
         return response
     else:
         messages.success(request, '未查询到您的捐赠记录！')
@@ -143,6 +118,8 @@ class RegisterView(CreateView):
         # 自定义表单验证
         user = form.save(commit=False)
         user.email = form.cleaned_data['email']
+        user.gender = form.cleaned_data['gender']
+        print(f'性别：{user.gender}')
         user.role = form.cleaned_data['role']
         user.mobile = form.cleaned_data['mobile']
         user.address = form.cleaned_data['address']
@@ -211,17 +188,17 @@ class MyProfileView(LoginRequiredMixin, TemplateView):
             # 获取该记录中未通过审核的物品数量和通过物品的数量
             all_items_count = record.donation_items.all().count
             unchecked_items_count = record.donation_items.filter(status='0').count()
-            checked_items_count = record.donation_items.filter(status__in=['1','2']).count()
+            checked_items_count = record.donation_items.filter(status__in=['1', '2']).count()
             # 将该记录的检查数量和已检查数量添加为属性
-            record.check_number = unchecked_items_count # 待审核的物品数量
-            record.checked_number = checked_items_count # 审核通过的物品数量
-            record.all_items_count = all_items_count # 总的物品数量
+            record.check_number = unchecked_items_count  # 待审核的物品数量
+            record.checked_number = checked_items_count  # 审核通过的物品数量
+            record.all_items_count = all_items_count  # 总的物品数量
         # 聚合查找出用户的总捐赠价值
         total_donation_amount = records.aggregate(Sum('donation_amount'))['donation_amount__sum']
         # 将自定义的记录变量和用户总捐赠价值加入上下文
         context['records'] = records
         context['total_donation_amount'] = total_donation_amount
-        print('MyProfileView.get_context_data.total_donation_amount:',total_donation_amount)
+        print('MyProfileView.get_context_data.total_donation_amount:', total_donation_amount)
         return context
 
 
@@ -242,6 +219,7 @@ class MyUserUpdateView(LoginRequiredMixin, UpdateView):
 import random
 from django.core.mail import send_mail
 
+
 def send_verification_code(request):
     email = request.POST.get('email')
     if not email:
@@ -250,8 +228,8 @@ def send_verification_code(request):
     send_mail(
         '验证码',
         f'您的验证码是：{verification_code}',
-        'service@example.com', # 发送方邮件地址
-        [email], # 接收方邮件地址
+        'service@example.com',  # 发送方邮件地址
+        [email],  # 接收方邮件地址
         fail_silently=False,
     )
     return JsonResponse({'status': 'ok'})

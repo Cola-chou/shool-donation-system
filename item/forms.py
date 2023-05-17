@@ -24,7 +24,7 @@ class DonationItemForm(forms.ModelForm):
         # 添加支付方式选项
         if self.request_item.category.name == '人民币':
             self.fields['payment_method'] = forms.ChoiceField(
-                choices=[('alipay', '支付宝支付'), ('offline', '线下支付')],
+                choices=[('alipay', '支付宝捐赠'), ('offline', '线下捐赠')],
                 widget=forms.RadioSelect,
                 label='提交方式',
                 initial='offline'  # 设置initial为'offline'
@@ -97,7 +97,7 @@ class DonationItemChangeForm(forms.ModelForm):
         # 添加支付方式选项
         if is_money:
             self.fields['payment_method'] = forms.ChoiceField(
-                choices=[('alipay', '支付宝支付'), ('offline', '线下支付')],
+                choices=[('alipay', '支付宝捐赠'), ('offline', '线下捐赠')],
                 widget=forms.RadioSelect,
                 label='提交方式',
                 initial='offline'  # 设置initial为'offline'

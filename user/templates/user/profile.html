@@ -12,7 +12,7 @@
                     {% if user.avatar %}
                         <img src="{{ user.avatar.url }}" style="width: 250px;height: 250px;margin-top: 40px;border: 1px solid" alt="{{ user.username }}的头像" class="avatar img-fluid rounded-circle">
                     {% else %}
-                        <img src="{% static "img/no_image.png" %}"  style="width: 250px;height: 250px;margin-top: 40px;border: 1px solid" alt="{{ user.username }}的头像" class="avatar img-fluid rounded-circle">
+                        <img src="{% static "img/no_image.png" %}" style="width: 250px;height: 250px;margin-top: 40px;border: 1px solid" alt="{{ user.username }}的头像" class="avatar img-fluid rounded-circle">
                     {% endif %}
                 </div>
                 <div class="col-md-9">
@@ -21,6 +21,14 @@
                         <tr>
                             <th><b class="text-lg" style="font-size: large">用户名:</b></th>
                             <td>{{ user.username }}</td>
+                        </tr>
+                        <tr>
+                            <th><b class="text-lg" style="font-size: large">姓名:</b></th>
+                            <td>{{ user.last_name }}{{ user.first_name }}</td>
+                        </tr>
+                        <tr>
+                            <th><b class="text-lg" style="font-size: large">性别:</b></th>
+                            <td>{{ user.get_gender_display }}</td>
                         </tr>
                         <tr>
                             <th><b class="text-lg" style="font-size: large">邮箱:</b></th>

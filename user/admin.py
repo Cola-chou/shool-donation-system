@@ -16,14 +16,14 @@ class CustomUserAdminForm(UserChangeForm):
 
 
 class MyUserAdmin(UserAdmin):
-    list_display = ['username','role', 'mobile','email']
+    list_display = ['username','gender','role', 'mobile','email']
     # 自定义用户表单
     form = CustomUserAdminForm
     # 自定义用户创建表单
     add_form = UserCreationForm
+    list_editable = ['gender']
     # 自定义密码修改表单类
     change_password_form = AdminPasswordChangeForm
-
     # 添加用户后台显示字段
     fieldsets = (
         (('个人信息'), {'fields': ('avatar','username', 'password', 'email', 'mobile',

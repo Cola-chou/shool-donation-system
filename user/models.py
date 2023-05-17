@@ -25,12 +25,16 @@ class MyUser(AbstractUser, PermissionsMixin):
         ('2', '其他工作人员'),
         ('3', '社会人士'),
     ]
+    GENDER_CHOICES = [('male', '男'), ('female', '女')]
     last_name = models.CharField('姓', max_length=50, blank=True)
     first_name = models.CharField('名', max_length=50, blank=True)
     email = models.EmailField('邮件', null=True, unique=True)
     avatar = models.ImageField('头像', upload_to=userAvatars_directory_path,
                                blank=True,
                                null=True)
+    gender = models.CharField('性别', max_length=10,
+                              choices=GENDER_CHOICES,
+                              default='male')
     role = models.CharField('人群', max_length=20,
                             choices=ROLE_CHOICES,
                             null=True)

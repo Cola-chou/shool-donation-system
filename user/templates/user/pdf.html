@@ -2,38 +2,40 @@
 <html lang="en">
 <head title="{{ user.username }}的捐赠证书">
     <style>
+        body {
+            font-family: SimSun, sans-serif;
+        }
 
-        .paid, .pending {
+        .pending {
             color: #1bae37;
             border: 4px solid #1bae37;
             display: inline-block;
             text-transform: uppercase;
             font-weight: bold;
-            font-size: 22px;
-            padding: 4px 12px 0px;
+            font-size: 50px;
+            padding: 4px 12px 0;
             float: right;
             transform: rotate(-15deg);
-            margin-right: 60px;
-            margin-top: 60px;
+        {#margin-right: 350px;#}{#margin-top: -900px;      #} margin-right: -350px;
+            margin-top: -900px;
         }
+
 
         {##}
         .pending {
             color: #a82d2d;
             border: 4px solid #a82d2d;
+            position: absolute;
         }
     </style>
     <link rel="stylesheet" href="{% static "css/bootstrap.css" %}">
     <title></title>
 </head>
 <body>
-<h1>高校爱心捐赠系统</h1>
-{#<p>#}
-{#<p>{{ user.username }} 的证书</p><br>#}
-{#<span class="secondary">#}
-{#     <p>证书生成时间:  {% now 'Y-m-d' %} .</p>#}
-{#    </span>#}
-{#<p>参与过的捐赠</p>#}
+<h1 style="color: red;font-size: xxx-large">高校爱心捐赠系统</h1>
+<span class="secondary">
+     <p>证书生成时间:  {% now 'Y-m-d' %}</p>
+    </span>
 
 
 <section class="section bg-gray">
@@ -42,19 +44,20 @@
             <b class="mt-5 mb-4" style="padding-left: 20px;font-size: xx-large">捐款人</b>
         </div>
         <div class="row" style="margin-bottom: 20px">
-            <div class="col-md-3 mb-4">
-{#                {% if user.avatar %}#}
-{#                    <img src="{{ user.avatar.url }}" alt="{{ user.username }}的头像" class="img-fluid rounded-circle">#}
-{#                {% else %}#}
-{#                    <img src="{% static "img/no_image.png" %}" alt="" class="img-fluid rounded-circle">#}
-{#                {% endif %}#}
-            </div>
-            <div class="col-md-9">
+            <div class="col-md-12" style="padding-left: 20px">
                 <table class="table table-hover">
                     <tbody>
                     <tr>
                         <th><b class="text-lg" style="font-size: large">用户名:</b></th>
                         <td>{{ user.username }}</td>
+                    </tr>
+                    <tr>
+                        <th><b class="text-lg" style="font-size: large">姓名:</b></th>
+                        {% if user.gender == 'male' %}
+                            <td>{{ user.last_name }}{{ user.first_name }}先生</td>
+                        {% else %}
+                            <td>{{ user.last_name }}{{ user.first_name }}女士</td>
+                        {% endif %}
                     </tr>
                     <tr>
                         <th><b class="text-lg" style="font-size: large">邮箱:</b></th>
@@ -70,35 +73,40 @@
         </div>
     </div>
     <div class="container">
-        <div style="background-color: rgba(0,0,0,0.4);color: whitesmoke;">
-            <b style="padding-left: 20px;font-size: xx-large">参与捐赠项目</b>
+        <div style="background-color: rgba(0,0,0,0.4);color: whitesmoke;padding-top: 10px">
+            <b style="padding-left: 20px;padding-top: 10px;font-size: xx-large">捐赠的物资</b>
+
+            <div style="text-align: right;padding: 0px 10px 10px 0;margin-bottom: 0;">
+                <b style="text-align: right;padding: 10px 10px 10px 0;margin-bottom: 0;">
+                    共计捐款：<span>{{ total_amount }}元</span></b>
+            </div>
         </div>
-        <ul>
-            {% for project in projects %}
-                <li>
-                    {{ project.project_name }}
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
-    <div class="container">
-        <div style="background-color: rgba(0,0,0,0.4);color: whitesmoke;">
-            <b style="padding-left: 20px;font-size: xx-large">捐赠的物资</b>
+        <div style="">
+            {% if result %}
+                {% for project, data in result.items %}
+                    <div style="padding: 20px;border: 1px solid;border-collapse: collapse">
+                        <h3>{{ project }}</h3>
+                        <ul>
+                            {% for item in data.donation_items %}
+                                <li>{{ item.name }} x {{ item.quantity }}</li>
+                            {% endfor %}
+                        </ul>
+                        <p style="text-align: right;padding-top: 50px;margin-bottom: 0;border: 1px solid transparent;border-right: 1px solid transparent;">捐款：<span>{{ data.total_amount }}元</span></p>
+
+                    </div>
+                {% endfor %}
+
+                <p style="text-align: right;padding: 10px 10px 30px 0;margin-bottom: 0;border-left: 1px solid transparent;border-right: 1px solid transparent;">
+                    {#                    <b>共计捐款：<span>{{ total_amount }}元</span></b>#}
+                </p>
+            {% else %}
+                <p>您尚未捐赠过物资。</p>
+            {% endif %}
         </div>
-        <p>捐过的物资：</p>
-        <ul>
-            {% for item in items %}
-                <li>{{ item.name }} x {{ item.quantity }}</li>
-            {% endfor %}
-        </ul>
-        <p style="text-align: right;padding-top: 50px;margin-bottom: 0;">
-            <b>共计捐款：{{ total_amount }}元</b>
-        </p>
     </div>
     <span class="pending">
                高校爱心捐赠系统
               </span>
-
 </section>
 </body>
 </html>

@@ -26,8 +26,10 @@ class MyLoginForm(AuthenticationForm):
 
 class MyRegistrationForm(UserCreationForm):
     # 自定义表单字段
-    email = forms.EmailField(label='邮件',max_length=254, required=True)
-    mobile = forms.CharField(label='手机号码',max_length=11)
+    # GENDER_CHOICES = [('male', '男'), ('female', '女')]
+    # gender = forms.ChoiceField(choices=GENDER_CHOICES, widget=forms.RadioSelect())
+    email = forms.EmailField(label='邮件', max_length=254, required=True)
+    mobile = forms.CharField(label='手机号码', max_length=11)
 
     # 重写邮件验证方法
     def clean_email(self):
@@ -52,7 +54,7 @@ class MyRegistrationForm(UserCreationForm):
         # 表单模型类
         model = MyUser
         # 显示的表单字段
-        fields = ['username', 'email', 'password1', 'password2', 'role', 'mobile', 'address', 'weChat']
+        fields = ['username', 'last_name', 'first_name', 'gender', 'email', 'password1', 'password2', 'role', 'mobile', 'address', 'weChat']
 
 
 class MyUserForm(forms.ModelForm):
@@ -60,5 +62,4 @@ class MyUserForm(forms.ModelForm):
         # 表单模型类
         model = MyUser
         # 显示的表单字段
-        fields = ['email', 'avatar', 'role', 'mobile', 'address', 'weChat']
-
+        fields = ['last_name', 'first_name', 'email', 'gender', 'avatar', 'role', 'mobile', 'address', 'weChat']

@@ -1,5 +1,6 @@
 import os
 import shutil
+import time
 
 from django.conf import settings
 from django.contrib import messages
@@ -57,10 +58,22 @@ def donation_item_create(request, request_id, project_id):
                                 request_id=request_id,
                                 user_id=user_id,
                                 project_id=project_id)
+        payment_method = request.POST.get('payment_method')
+        print(payment_method)
         if form.is_valid():
             # 处理表单提交
-            messages.success(request, '捐赠清单填写成功！')
-            return redirect('donation:project_detail', pk=project_id)
+            # 表单提交成功
+            print(form.cleaned_data)
+            # 获取创建的捐赠物品id
+            item_id = form.cleaned_data.get('id')
+            if payment_method=='alipay':
+                # messages.success(request, '捐赠清单填写成功！等待支付！')
+                # time.sleep(3)
+                return redirect('alipay:pay', item_id=item_id)
+                # return redirect('donation:project_detail', pk=project_id)
+            else:
+                messages.success(request, '捐赠清单填写成功！')
+                return redirect('donation:project_detail', pk=project_id)
     else:
         # text = has_rmb(request_item.category.name)
         # get请求
@@ -84,11 +97,13 @@ def donation_item_create(request, request_id, project_id):
 @login_required(login_url='account:login')
 def donation_item_change(request, item_id, record_id):
     # lambda函数：物品名称预填充
-    has_rmb = lambda text: '人民币' if '人民币' in text else f'xx{text},xx型号'
     # 请求物资对象
     donation_item = get_object_or_404(DonationItem,
                                       id=item_id)
-    user_id = request.user.id
+    # user_id = request.user.id
+    is_money = False
+    if donation_item.category.name == '人民币':
+        is_money = True
     print(donation_item)
     if request.method == 'POST':
         form = DonationItemChangeForm(request.POST,
@@ -132,14 +147,25 @@ def donation_item_change(request, item_id, record_id):
                 donation_item.save(update_fields=['name'])
                 donation_item.save()
 
-            return redirect('item:record_items_list', record_id)
+            payment_method = request.POST.get('payment_method')
+            print(payment_method)
+            if payment_method == 'alipay':
+                # messages.success(request, '捐赠清单填写成功！等待支付！')
+                # time.sleep(3)
+                return redirect('alipay:pay', item_id=item_id)
+                # return redirect('donation:project_detail', pk=project_id)
+            else:
+                messages.success(request, '捐赠清单填写成功！')
+                # return redirect('donation:project_detail', pk=project_id)
+                return redirect('item:record_items_list', record_id)
     else:
         # get请求
         if donation_item.status != '0':
             # 非法get请求，用户只能修改未审核过的物品
             return redirect('account:profile')
-        form = DonationItemChangeForm(instance=donation_item)
-
+        form = DonationItemChangeForm(
+            instance=donation_item,
+            is_money=is_money)
     context = {'form': form}
     if form.errors:
         context['post_data'] = request.POST

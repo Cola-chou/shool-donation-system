@@ -89,6 +89,15 @@ class DonationProjectDetailView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
 
+        # 检验是否有支付宝来的session
+        print(self.request.GET)
+        payment_success = self.request.session.pop('payment_success', None)
+        if payment_success == 'success':
+            messages.success(self.request, '支付成功！请在记录中查看！')
+        elif payment_success == 'failed':
+            messages.success(self.request, '支付失败！已保存至未审核记录！')
+        else:
+            pass
         # 获取本捐赠项目的请求物资对象
         request_items = RequestItem.objects \
             .filter(donation_project_id=self.object.id)

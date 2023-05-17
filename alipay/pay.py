@@ -1,5 +1,6 @@
 from datetime import datetime
 from Crypto.PublicKey import RSA
+
 from Crypto.Signature import PKCS1_v1_5
 from Crypto.Hash import SHA256
 from urllib.parse import quote_plus
@@ -20,7 +21,10 @@ class AliPay(object):
         self.app_private_key_path = app_private_key_path
         self.app_private_key = None
         self.return_url = return_url
-        with open(self.app_private_key_path) as fp:
+        # self.app_private_key = app_private_key_path
+        # self.alipay_public_key = alipay_public_key_path
+        with open(self.app_private_key_path,encoding='utf-8') as fp:
+            print(fp.read())
             self.app_private_key = RSA.importKey(fp.read())
         self.alipay_public_key_path = alipay_public_key_path
         with open(self.alipay_public_key_path) as fp:

@@ -117,16 +117,29 @@
                                     <div class="row">
                                         <div class="col-4">
                                             <h4>{{ result.user.username }}</h4>
+                                            {% if result.user.first_name %}
+                                                {{ result.user.first_name }}
+                                                {{ result.user.last_name }}先生
+                                            {% endif %}
                                         </div>
                                     </div>
                                     <div class="row">
                                         <div class="col-12">
-                                            <ul>
+                                            <ol>
                                                 {% for item in result.items %}
-                                                    <li>{{ item.name }} x {{ item.quantity }}</li>
+                                                    <li>{{ item.name }} &nbsp;&nbsp;x{{ item.quantity }}
+                                                    </li>
                                                 {% endfor %}
-                                            </ul>
-                                            <p>总金额：{{ result.total_amount }}</p>
+                                            </ol>
+                                            <p>总金额：{{ result.total_amount }} 元
+                                                <br>
+                                                爱心寄语：
+                                                {% for item in result.items %}
+                                                    {% if item.love_message %}
+                                                        [{{ forloop.counter }}]: &nbsp;{{ item.love_message }}
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>

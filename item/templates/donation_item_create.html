@@ -1,4 +1,5 @@
-<!-- donation_form.html -->
+
+
 {% extends 'base.html' %}
 
 {% block title %}
@@ -9,7 +10,7 @@
     <section class="section bg-gray">
         <div class="container">
             <h1>捐赠物资表单</h1>
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" id="donation-form">
                 {% csrf_token %}
                 {{ form.as_p }}
                 {% if form.errors %}
@@ -22,8 +23,45 @@
                         {% endfor %}
                     </ul>
                 {% endif %}
-                <input type="submit" value="提交">
+                <input type="submit" value="提交" id="submit-btn">
             </form>
+            <div id="countdown-timer" style="display: none;">
+                正在提交，请等待<span id="wait-time"></span>秒...
+                <div style="width: 100%;height: 500px"></div>
+            </div>
         </div>
     </section>
+
+    <script>
+        // 等待时间（秒）
+        const WAIT_TIME = 1;
+
+        // 表单提交前的处理
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            const form = document.getElementById('donation-form');
+            form.style.display = 'none';
+
+            const timer = document.getElementById('countdown-timer');
+            timer.style.display = 'block';
+
+            const countdown = document.getElementById('wait-time');
+            countdown.innerText = WAIT_TIME.toString();
+
+            // 倒计时
+            let timeLeft = WAIT_TIME;
+            const timerId = setInterval(() => {
+                if (timeLeft === 0) {
+                    clearInterval(timerId);
+                    form.submit();
+                } else {
+                    countdown.innerText = timeLeft.toString();
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+
+        const submitBtn = document.getElementById('submit-btn');
+        submitBtn.addEventListener('click', handleFormSubmit);
+    </script>
 {% endblock %}

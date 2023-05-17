@@ -21,31 +21,30 @@ class DonationItemForm(forms.ModelForm):
                                          id=project_id)
         super().__init__(*args, **kwargs)
 
+        # 添加支付方式选项
+        if self.request_item.category.name == '人民币':
+            self.fields['payment_method'] = forms.ChoiceField(
+                choices=[('alipay', '支付宝支付'), ('offline', '线下支付')],
+                widget=forms.RadioSelect,
+                label='提交方式',
+                initial='offline'  # 设置initial为'offline'
+            )
+
+    def clean_payment_method(self):
+        payment_method = self.cleaned_data.get('payment_method')
+        if not payment_method:
+            raise forms.ValidationError('请选择一个选项')
+        return payment_method
+
     def clean(self):
-        # 验证失败标志
-        # valid_flag = True
-        # lambda函数：物品名称预填充
-        # has_rmb = lambda text: '人民币' if '人民币' in text else f'xx{text},xx型号'
         # 原有的表单验证
         cleaned_data = super(DonationItemForm, self).clean()
-        # 获取表单的name,deatail字段
-        # 验证name和detail字段是否修改预填充文字
-        # if self.cleaned_data['name'] == has_rmb(self.request_item.category.name) \
-        #         and self.request_item.category.name != '人民币':
-        #     self.add_error('name', f'请将xx替换为自己的物品')
-        #     valid_flag = False
-        # if self.cleaned_data['detail'] == has_rmb(self.request_item.category.name) \
-        #         and self.request_item.category.name != '人民币':
-        #     self.add_error('detail', f'请将xx替换为自己的描述')
-        #     valid_flag = False
-        # print('验证成功')
         # 验证成功
-        # 获取物品类别
+        # 获取请求物品信息
         name = cleaned_data.get('name')
         quantity = self.cleaned_data['quantity']
         detail = cleaned_data.get('detail')
-        category = get_object_or_404(Category,
-                                     id=self.request_item.category.id)
+        category = self.request_item.category
         price = self.request_item.price
         image = self.cleaned_data['item_image']
         love_message = self.cleaned_data['love_message']
@@ -71,6 +70,9 @@ class DonationItemForm(forms.ModelForm):
             exist_record.save()
         donation_item.donation_record = exist_record
         donation_item.save()
+        # 传递创建物品id供支付宝对接使用
+        cleaned_data.update({'id': donation_item.id})
+        # cleaned_data.update({'id': 1})
         return cleaned_data
 
     class Meta:
@@ -85,71 +87,27 @@ class DonationItemForm(forms.ModelForm):
 
 
 class DonationItemChangeForm(forms.ModelForm):
-    # def __init__(self, *args, **kwargs):
-    #     user_id = kwargs.pop('user_id')
-    #     self.user = get_object_or_404(MyUser,
-    #                                   id=user_id)
-    #     self.project = get_object_or_404(DonationProject,
-    #                                      id=self.request_item.donation_project_id)
-    #     super().__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        # 从参数字典中获取关键值
+        print(kwargs, args)
+        is_money = kwargs.pop('is_money', False)
+        print(f'is_money:{is_money}')
+        super().__init__(*args, **kwargs)
+        # 添加支付宝支付选项
+        # 添加支付方式选项
+        if is_money:
+            self.fields['payment_method'] = forms.ChoiceField(
+                choices=[('alipay', '支付宝支付'), ('offline', '线下支付')],
+                widget=forms.RadioSelect,
+                label='提交方式',
+                initial='offline'  # 设置initial为'offline'
+            )
 
-    # def clean(self):
-    #     # 验证失败标志
-    #     valid_flag = True
-    #     # lambda函数：物品名称预填充
-    #     has_rmb = lambda text: '人民币' if '人民币' in text else f'xx{text},xx型号'
-    #     # 原有的表单验证
-    #     cleaned_data = super(DonationItemChangeForm, self).clean()
-    #     # 获取表单的name,deatail字段
-    #     name = cleaned_data.get('name')
-    #     detail = cleaned_data.get('detail')
-    #     # 验证name和detail字段是否修改预填充文字
-    #     if self.cleaned_data['name'] == has_rmb(self.request_item.category.name) \
-    #             and self.request_item.category.name != '人民币':
-    #         self.add_error('name', f'请将xx替换为自己的物品')
-    #         valid_flag = False
-    #     if self.cleaned_data['detail'] == has_rmb(self.request_item.category.name) \
-    #             and self.request_item.category.name != '人民币':
-    #         self.add_error('detail', f'请将xx替换为自己的描述')
-    #         valid_flag = False
-    #     if valid_flag:
-    #         # 验证成功
-    #         # 创建
-    #         category = get_object_or_404(Category,
-    #                                      id=self.request_item.category.id)
-    #         price = self.request_item.price
-    #         quantity = self.cleaned_data['quantity']
-    #         image = self.cleaned_data['item_image']
-    #         # 创建DonationItem对象
-    #         donation_item = DonationItem(
-    #             name=name,
-    #             detail=detail,
-    #             quantity=quantity,
-    #             category=category,
-    #             price=price,
-    #             item_image=image
-    #         )
-    #         # 已存在记录
-    #         try:
-    #             exist_record = DonationRecord.objects.get(donation_user_id=self.user.id,
-    #                                                       donation_project_id=self.project.id)
-    #             donation_item.donation_record = exist_record
-    #             donation_item.save()
-    #         except ObjectDoesNotExist:
-    #             # 创建DonationRecord对象
-    #             donation_record = DonationRecord(
-    #                 donation_user=self.user,
-    #                 donation_project=self.project,
-    #                 status='0'
-    #             )
-    #
-    #             # 将DonationItem对象和DonationRecord对象关联
-    #             donation_item.donation_record = donation_record
-    #
-    #             # 保存DonationRecord对象和DonationItem对象到数据库中
-    #             donation_record.save()
-    #             donation_item.save()
-    #     return cleaned_data
+    def clean_payment_method(self):
+        payment_method = self.cleaned_data.get('payment_method')
+        if not payment_method:
+            raise forms.ValidationError('请选择一个选项')
+        return payment_method
 
     class Meta:
         model = DonationItem

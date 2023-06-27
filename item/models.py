@@ -1,10 +1,11 @@
 import os
 import shutil
+
 from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import Sum
-from django.db.models.signals import pre_delete, post_delete, post_save, pre_save
+from django.db.models.signals import post_delete, post_save, pre_save
 from django.dispatch import receiver
 from django.utils.html import format_html
 
@@ -76,19 +77,6 @@ class RequestItem(models.Model):
 
     image_tag.short_description = '物品图片'  # 此处为了方便显示修改页面的 label 标题
 
-    # def save(self, *args, **kwargs):
-    #     print('save')
-    #     from django.db.models import Sum
-    #     # 保存捐赠物品时，自动更新物品价值
-    #     self.all_price = self.price * self.quantityF
-    #     # 更新捐赠项目中的目的捐赠价值donation_amount
-    #     self.donation_project.donation_amount = self.donation_project \
-    #                                                 .request_items \
-    #                                                 .aggregate(Sum('all_price'))['all_price__sum'] or 0
-    #     # 此处先保存至内存中的RequestItem对象的donation_project属性中
-    #     # 最后在save_related方法中对内存中的RequestItem对象保存至数据库
-    #     self.donation_project.save()
-    #     super().save(*args, **kwargs)
 
     def delete(self, using=None, keep_parents=False):
         print('Request.delete()')
@@ -151,7 +139,7 @@ class Require(models.Model):
     request_item = models.ForeignKey(RequestItem,
                                      verbose_name='请求的物品',
                                      related_name='requirements',
-                                     on_delete=models.SET_NULL,
+                                     on_delete=models.CASCADE,
                                      null=True,
                                      blank=True)
 

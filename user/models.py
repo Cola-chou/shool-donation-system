@@ -26,8 +26,8 @@ class MyUser(AbstractUser, PermissionsMixin):
         ('3', '社会人士'),
     ]
     GENDER_CHOICES = [('male', '男'), ('female', '女')]
-    last_name = models.CharField('姓', max_length=50, blank=True)
-    first_name = models.CharField('名', max_length=50, blank=True)
+    last_name = models.CharField('姓', max_length=20, blank=True)
+    first_name = models.CharField('名', max_length=20, blank=True)
     email = models.EmailField('邮件', null=True, unique=True)
     avatar = models.ImageField('头像', upload_to=userAvatars_directory_path,
                                blank=True,
@@ -71,8 +71,8 @@ class MyUser(AbstractUser, PermissionsMixin):
         super().save(*args, **kwargs)
 
     class Meta(AbstractUser.Meta):
-        verbose_name = '用户'
-        verbose_name_plural = '用户'
+        verbose_name = '捐助者'
+        verbose_name_plural = '捐助者'
 
     def __str__(self):
         return self.username

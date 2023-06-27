@@ -1,7 +1,8 @@
 from django import forms
-from apps.donation.models import DonationProject, DonationRecord
-from .models import DonationItem, RequestItem, Category
 from django.shortcuts import get_object_or_404
+
+from apps.donation.models import DonationProject, DonationRecord
+from .models import DonationItem, RequestItem
 from ..user.models import MyUser
 
 
@@ -11,12 +12,14 @@ class DonationItemForm(forms.ModelForm):
         # 从参数字典中获取关键值
         request_id = kwargs.pop('request_id')
         project_id = kwargs.pop('project_id')
+        item_detail = kwargs.pop('item_detail')
         user_id = kwargs.pop('user_id')
         # 根据关键值创建对象
         self.request_item = get_object_or_404(RequestItem,
                                               id=request_id)
         self.user = get_object_or_404(MyUser,
                                       id=user_id)
+        self.item_detail = item_detail
         self.project = get_object_or_404(DonationProject,
                                          id=project_id)
         super().__init__(*args, **kwargs)
@@ -44,6 +47,8 @@ class DonationItemForm(forms.ModelForm):
         name = cleaned_data.get('name')
         quantity = self.cleaned_data['quantity']
         detail = cleaned_data.get('detail')
+        if detail == self.item_detail:
+            detail = detail + f'x{quantity}'
         category = self.request_item.category
         price = self.request_item.price
         image = self.cleaned_data['item_image']

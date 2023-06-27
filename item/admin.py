@@ -12,6 +12,7 @@ from apps.donation.models import DonationProject
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ['name', 'slug']
     fields = ['name', 'slug']
+    search_fields = ['name']
 
 
 class StatusSearcher(admin.SimpleListFilter):
@@ -192,6 +193,7 @@ class RequestItemItemAdmin(admin.ModelAdmin):
     inlines = [RequireInline]
     list_display_links = ['name', 'donation_project']
     list_filter = [RequestItemProjectsSearcher, ]
+    search_fields = ['category__name']
     fields = [
         'donation_project',
         'category',
@@ -266,4 +268,4 @@ class RequireAdmin(admin.ModelAdmin):
     # list_filter = ('request_item',)
     # fields = ['name', 'information']
     # readonly_fields = ['request_item']
-    # search_fields = ('name', 'information')
+    search_fields = ('name', 'information')

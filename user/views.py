@@ -47,13 +47,7 @@ def url_fetcher(url):
         return weasyprint.default_url_fetcher(url)
 
 
-from io import BytesIO
 
-from PyPDF2 import PdfFileWriter, PdfReader
-from io import BytesIO
-from PIL import Image
-from pdf2image import convert_from_bytes
-from io import BytesIO
 from django.http import HttpResponse
 
 

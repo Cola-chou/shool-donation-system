@@ -1,7 +1,5 @@
 from django.core.validators import MinValueValidator, FileExtensionValidator
 from django.db import models
-from django.db.models.signals import post_save
-from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.html import format_html
 

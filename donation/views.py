@@ -27,7 +27,7 @@ class DonationProjectListView(ListView):
     paginate_by = 4
     extra_context = {'number': None, 'q': None}
     # 自定义查询集：获取所有状态为发起，完成和截止的捐赠项目
-    donation_projects = DonationProject.objects.all()
+    donation_projects = DonationProject.published.all()
     # 使用Case和When表达式对状态和创建时间进行排序
     donation_projects = donation_projects.annotate(
         is_finished=Case(

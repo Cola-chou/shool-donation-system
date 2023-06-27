@@ -63,3 +63,4 @@ class MyUserForm(forms.ModelForm):
         model = MyUser
         # 显示的表单字段
         fields = ['last_name', 'first_name', 'email', 'gender', 'avatar', 'role', 'mobile', 'address', 'weChat']
+

@@ -10,10 +10,11 @@
                 发布时间{{ new.modified_time|date:'Y年m月d日 H:i:s' }}
             </div>
             <img src="{{ new.image.url }}" alt="" style="width: 100%">
-            <p style="font-size: large;padding: 20px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ new.body }}</p>
+
             <div id="content" style="font-size: large;padding: 20px">
                 {{ new.markdown_body|custom_markdown }}  <!-- 使用 markdownx 过滤器 -->
             </div>
+            <p style="font-size: large;padding: 20px">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ new.body }}</p>
             {% if projects %}
                 <div class="col-md-12">
                     <h5 class="font-weight-bold spanborder"><span>相关捐赠项目</span></h5>

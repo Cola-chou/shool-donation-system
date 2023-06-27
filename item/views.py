@@ -1,18 +1,17 @@
 import os
 import shutil
-import time
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseNotAllowed, HttpResponse
 from django.core.files.base import ContentFile
+from django.http import HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
 from django.utils.datastructures import MultiValueDictKeyError
 
+from apps.donation.models import DonationRecord
 from .forms import DonationItemForm, DonationItemChangeForm
 from .models import DonationItem, RequestItem
-from apps.donation.models import DonationProject, DonationRecord
-from django.shortcuts import render, redirect, get_object_or_404
 
 
 @login_required(login_url='account:login')
@@ -44,12 +43,13 @@ def donation_item_delete(request, record_id, item_id):
 
 @login_required(login_url='account:login')
 def donation_item_create(request, request_id, project_id):
-    # lambda函数：物品名称预填充
-    # has_rmb = lambda text: '人民币' if '人民币' in text else f'xx{text},xx型号'
     # 请求物资对象
     request_item = get_object_or_404(RequestItem,
                                      id=request_id)
     user_id = request.user.id
+    text = f'[{request.user.username}]捐赠：[{request_item.category.name}]'
+    if request.user.first_name and request.user.last_name:
+        text = f'[{request.user.last_name}{request.user.first_name}]捐赠：[{request_item.category.name}]'
     print(request_item)
     if request.method == 'POST':
         # post请求
@@ -57,7 +57,8 @@ def donation_item_create(request, request_id, project_id):
                                 request.FILES,
                                 request_id=request_id,
                                 user_id=user_id,
-                                project_id=project_id)
+                                project_id=project_id,
+                                item_detail=text)
         payment_method = request.POST.get('payment_method')
         print(payment_method)
         if form.is_valid():
@@ -66,7 +67,7 @@ def donation_item_create(request, request_id, project_id):
             print(form.cleaned_data)
             # 获取创建的捐赠物品id
             item_id = form.cleaned_data.get('id')
-            if payment_method=='alipay':
+            if payment_method == 'alipay':
                 # messages.success(request, '捐赠清单填写成功！等待支付！')
                 # time.sleep(3)
                 return redirect('alipay:pay', item_id=item_id)
@@ -75,17 +76,17 @@ def donation_item_create(request, request_id, project_id):
                 messages.success(request, '捐赠清单填写成功！')
                 return redirect('donation:project_detail', pk=project_id)
     else:
-        # text = has_rmb(request_item.category.name)
         # get请求
         initial = {
             'price': request_item.price,
             'name': request_item.name,
-            'detail': f'[{request.user.username}]捐赠：[{request_item.name}]',
+            'detail': text,
         }
         form = DonationItemForm(initial=initial,
                                 request_id=request_id,
                                 user_id=user_id,
-                                project_id=project_id)
+                                project_id=project_id,
+                                item_detail=text)
 
     context = {'form': form}
     if form.errors:

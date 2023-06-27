@@ -1,10 +1,8 @@
 from django.conf import settings
 from django.contrib import admin
 from django.utils.html import format_html
-from django.utils.safestring import mark_safe
 
-from .models import News, Announcement
-
+from .models import Announcement
 
 
 class StatusSearcher(admin.SimpleListFilter):
@@ -42,8 +40,9 @@ from .models import News
 
 
 class NewsAdminForm(forms.ModelForm):
-    markdown_body = forms.CharField(widget=MarkdownxWidget())
+    markdown_body = forms.CharField(widget=MarkdownxWidget(), required=False, label='markdown辅助文本')
 
+    #
     class Media:
         js = (
             '//cdn.jsdelivr.net/npm/marked/marked.min.js',
@@ -55,6 +54,7 @@ class NewsAdminForm(forms.ModelForm):
         css = {
             'all': (
                 '//cdn.jsdelivr.net/npm/github-markdown-css/github-markdown.min.css',
+                '',
                 '//cdn.jsdelivr.net/npm/tui-editor/dist/tui-editor.min.css',
                 '//cdn.jsdelivr.net/npm/tui-editor/dist/tui-editor-contents.min.css',
                 settings.STATIC_URL + 'markdownx/css/markdownx.css',  # 添加此行

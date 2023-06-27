@@ -56,7 +56,7 @@ class News(models.Model):
             format_td = format_html('<span style="padding:2px;background-color:blue;color:white">编辑</span>')
         return format_td
 
-    Status.short_description = "物品状态"
+    Status.short_description = "新闻状态"
 
     class Meta:
         verbose_name = '新闻'
